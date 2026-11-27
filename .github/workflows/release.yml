@@ -48,7 +48,7 @@ jobs:
           toolchain: 1.100.0
       - uses: Swatinem/rust-cache@v2
       - name: Set up Python 3.12 (for CycloneDX SBOM)
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - shell: pwsh
