@@ -1,0 +1,42 @@
+export global R3xMetrics {
+    // 4px base spacing grid
+    out property <length> space_xs: 4px;
+    out property <length> space_sm: 8px;
+    out property <length> space_md: 12px;
+    out property <length> space_lg: 16px;
+    out property <length> space_xl: 24px;
+    out property <length> space_2xl: 32px;
+    out property <length> page_mobile: 16px;
+    out property <length> page_desktop: 24px;
+
+    // Material 3 Expressive corner radii
+    out property <length> radius_inner: 8px;
+    out property <length> radius_sm: 12px;
+    out property <length> radius_md: 16px;
+    out property <length> radius_lg: 20px;
+    out property <length> radius_xl: 24px;
+    out property <length> radius_hero: 28px;
+    out property <length> radius_2xl: 32px;
+    out property <length> radius_full: 9999px;
+
+    // Layout & adaptive breakpoints
+    out property <length> compact_max: 600px;
+    out property <length> expanded_min: 1024px;
+    out property <length> drawer_width: 240px;
+    out property <length> rail_width: 80px;
+    out property <length> bottom_bar_height: 80px;
+    out property <length> touch_target_min: 48px;
+
+    // Motion & reduced motion support
+    in-out property <bool> reduced_motion: false;
+    out property <duration> dur_state_change: root.reduced_motion ? 0ms : 120ms;
+    out property <duration> dur_surface_enter: root.reduced_motion ? 0ms : 250ms;
+    out property <duration> dur_surface_exit: root.reduced_motion ? 0ms : 150ms;
+    out property <duration> dur_shape_morph: root.reduced_motion ? 0ms : 450ms;
+}
+
+export global R3xMotion {
+    out property <easing> ease_standard: cubic-bezier(0.2, 0.0, 0.0, 1.0);
+    out property <easing> ease_exit: cubic-bezier(0.3, 0.0, 1.0, 1.0);
+    out property <easing> ease_morph: cubic-bezier(0.4, 0.0, 0.2, 1.0);
+}

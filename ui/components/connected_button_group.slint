@@ -1,0 +1,182 @@
+import { MaterialText, StateLayerArea } from "@material";
+import { R3xPalette } from "../tokens/palette.slint";
+import { R3xMetrics, R3xMotion } from "../tokens/metrics.slint";
+import { R3xTypography } from "../tokens/typography.slint";
+import { R3xIcons } from "../tokens/icons.slint";
+
+export struct SegmentedModeItem {
+    id: string,
+    label: string,
+    enabled: bool,
+    disabled_reason: string,
+}
+
+component SegmentedSegment {
+    in property <SegmentedModeItem> item;
+    in property <bool> selected;
+    in property <bool> is_first;
+    in property <bool> is_last;
+
+    callback clicked();
+
+    property <length> left_radius: root.is_first ? R3xMetrics.radius_full : R3xMetrics.radius_inner;
+    property <length> right_radius: root.is_last ? R3xMetrics.radius_full : R3xMetrics.radius_inner;
+
+    min_height: R3xMetrics.touch_target_min;
+    horizontal_stretch: 1;
+    accessible-role: button;
+    accessible-label: root.item.label;
+    accessible-enabled: root.item.enabled;
+    accessible-checkable: true;
+    accessible-checked: root.selected;
+    accessible-action-default => { if (root.item.enabled) { root.clicked(); } }
+
+    bg := Rectangle {
+        background: root.selected ? R3xPalette.secondary_container : R3xPalette.surface_container;
+        border_top_left_radius: root.left_radius;
+        border_bottom_left_radius: root.left_radius;
+        border_top_right_radius: root.right_radius;
+        border_bottom_right_radius: root.right_radius;
+        opacity: root.item.enabled ? 1.0 : 0.42;
+        clip: true;
+
+        animate background {
+            duration: R3xMetrics.dur_state_change;
+            easing: R3xMotion.ease_standard;
+        }
+
+        StateLayerArea {
+            width: 100%;
+            height: 100%;
+            enabled: root.item.enabled;
+            color: root.selected ? R3xPalette.on_secondary_container : R3xPalette.on_surface;
+            tooltip: root.item.enabled ? root.item.label : root.item.disabled_reason;
+
+            HorizontalLayout {
+                alignment: center;
+                spacing: R3xMetrics.space_sm;
+                padding_left: R3xMetrics.space_md;
+                padding_right: R3xMetrics.space_md;
+
+                if root.selected : VerticalLayout {
+                    alignment: center;
+                    Image {
+                        width: 18px;
+                        height: 18px;
+                        source: R3xIcons.check;
+                        colorize: R3xPalette.on_secondary_container;
+                    }
+                }
+
+                MaterialText {
+                    text: root.item.label;
+                    style: R3xTypography.label_large;
+                    color: root.selected ? R3xPalette.on_secondary_container : R3xPalette.on_surface_variant;
+                    vertical_alignment: center;
+                }
+            }
+
+            clicked => {
+                if root.item.enabled {
+                    root.clicked();
+                }
+            }
+        }
+    }
+}
+
+export component ConnectedSegmentedGroup {
+    in property <[SegmentedModeItem]> items;
+    in-out property <int> current_index: 0;
+
+    callback selected(index: int, id: string);
+
+    HorizontalLayout {
+        spacing: R3xMetrics.space_xs;
+
+        for item[idx] in root.items : SegmentedSegment {
+            item: item;
+            selected: idx == root.current_index;
+            is_first: idx == 0;
+            is_last: idx == root.items.length - 1;
+
+            clicked => {
+                root.current_index = idx;
+                root.selected(idx, item.id);
+            }
+        }
+    }
+}
+
+export enum GroupPosition {
+    first,
+    middle,
+    last,
+}
+
+export component ConnectedGroupButton {
+    in property <image> icon;
+    in property <string> label;
+    in property <string> tooltip;
+    in property <bool> emphasized: false;
+    in property <bool> enabled: true;
+    in property <GroupPosition> position: GroupPosition.middle;
+    in property <length> min_btn_height: 40px;
+
+    callback clicked();
+
+    property <length> left_r: root.position == GroupPosition.first ? R3xMetrics.radius_full : R3xMetrics.radius_inner;
+    property <length> right_r: root.position == GroupPosition.last ? R3xMetrics.radius_full : R3xMetrics.radius_inner;
+
+    min_height: root.min_btn_height;
+    min_width: root.label == "" ? 36px : layout.min_width;
+    accessible-role: button;
+    accessible-label: root.label == "" ? root.tooltip : root.label;
+    accessible-enabled: root.enabled;
+    accessible-action-default => { if (root.enabled) { root.clicked(); } }
+
+    Rectangle {
+        background: root.emphasized ? R3xPalette.secondary_container : R3xPalette.surface_container_high;
+        border_top_left_radius: root.left_r;
+        border_bottom_left_radius: root.left_r;
+        border_top_right_radius: root.right_r;
+        border_bottom_right_radius: root.right_r;
+        clip: true;
+
+        StateLayerArea {
+            width: 100%;
+            height: 100%;
+            enabled: root.enabled;
+            tooltip: root.tooltip;
+            color: root.emphasized ? R3xPalette.on_secondary_container : R3xPalette.on_surface;
+
+            layout := HorizontalLayout {
+                alignment: center;
+                spacing: R3xMetrics.space_sm;
+                padding_left: root.label == "" ? R3xMetrics.space_sm : R3xMetrics.space_lg;
+                padding_right: root.label == "" ? R3xMetrics.space_sm : R3xMetrics.space_lg;
+
+                if root.icon.width > 0 : VerticalLayout {
+                    alignment: center;
+                    Image {
+                        width: 18px;
+                        height: 18px;
+                        source: root.icon;
+                        colorize: root.emphasized ? R3xPalette.on_secondary_container : R3xPalette.on_surface_variant;
+                    }
+                }
+
+                if root.label != "" : MaterialText {
+                    text: root.label;
+                    style: R3xTypography.label_large;
+                    color: root.emphasized ? R3xPalette.on_secondary_container : R3xPalette.on_surface;
+                    vertical_alignment: center;
+                }
+            }
+
+            clicked => {
+                root.clicked();
+            }
+        }
+    }
+}

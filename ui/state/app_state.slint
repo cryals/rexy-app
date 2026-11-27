@@ -1,0 +1,86 @@
+import { HeroState } from "../components/connection_hero_button.slint";
+import { SegmentedModeItem } from "../components/connected_button_group.slint";
+
+export global R3xAppState {
+    // Navigation: 0=Home, 1=Subscriptions, 2=Servers, 3=Routing, 4=Connections, 5=Diagnostics, 6=CoreManager, 7=Settings
+    in-out property <int> current_nav: 0;
+    in-out property <bool> drawer_collapsed: false;
+    in-out property <string> app_version: "v0.1";
+
+    // Localization: 0=English, 1=Russian
+    in-out property <int> language_index: 0;
+    out property <bool> is_ru: root.language_index == 1;
+
+    // Theme: 0=System, 1=Light, 2=Dark, 3=AMOLED
+    in-out property <int> theme_mode_index: 2;
+    in-out property <bool> reduced_motion: false;
+    in-out property <bool> dynamic_color: false;
+    in-out property <bool> interface_advanced: true;
+
+    // Connection state
+    in-out property <HeroState> hero_state: HeroState.disconnected;
+    in-out property <string> status_label: "Not connected";
+    in-out property <string> session_timer: "00:00:00";
+    in-out property <string> hero_title: "No server selected";
+    in-out property <string> hero_subtitle: "Import a subscription or add a profile to begin";
+    in-out property <string> error_code: "";
+    in-out property <string> error_message: "";
+
+    // Selected server summary
+    in-out property <bool> has_selected_server: false;
+    in-out property <string> server_name: "No server selected";
+    in-out property <string> server_subtitle: "Import configuration or subscription";
+    in-out property <string> server_flag_code: "xx";
+    in-out property <string> server_latency: "—";
+
+    // Connection modes
+    in-out property <int> connection_mode_index: 0;
+    in-out property <[SegmentedModeItem]> connection_modes: [
+        { id: "tun", label: "TUN", enabled: true, disabled_reason: "" },
+        { id: "proxy", label: "Proxy", enabled: true, disabled_reason: "" },
+        { id: "mixed", label: "Mixed", enabled: true, disabled_reason: "" },
+    ];
+
+    // Telemetry (never fake metrics; N/A or Idle when unavailable)
+    in-out property <bool> has_traffic_data: false;
+    in-out property <string> download_speed: "0.0 Mbps";
+    in-out property <string> download_total: "Idle";
+    in-out property <string> upload_speed: "0.0 Mbps";
+    in-out property <string> upload_total: "Idle";
+    in-out property <string> quality_value: "N/A";
+    in-out property <string> quality_detail: "Not tested";
+    in-out property <string> download_stroke_path: "";
+    in-out property <string> download_fill_path: "";
+    in-out property <string> upload_stroke_path: "";
+
+    // Lower telemetry / core / IP cards
+    in-out property <string> external_ip: "Not checked";
+    in-out property <string> external_ip_location: "Connect or refresh to check";
+    in-out property <string> active_core_name: "Core adapters";
+    in-out property <string> active_core_subtitle: "Standby · Ready";
+    in-out property <string> active_core_badge: "Standby";
+    in-out property <string> active_sockets_value: "0 sockets";
+    in-out property <string> active_sockets_detail: "No active tunnel";
+
+    // Database counts
+    in-out property <int> subscription_count: 0;
+    in-out property <int> profile_count: 0;
+    in-out property <int> routing_rule_count: 0;
+    in-out property <int> log_entry_count: 0;
+    in-out property <string> snackbar_message: "";
+
+    // Callbacks handled by Rust controller
+    callback nav_selected(index: int);
+    callback hero_action_clicked();
+    callback mode_selected(index: int, id: string);
+    callback open_server_selector();
+    callback test_latency_clicked();
+    callback quick_settings_clicked();
+    callback copy_ip_clicked();
+    callback refresh_ip_clicked();
+    callback open_diagnostics_clicked();
+    callback theme_selected(index: int);
+    callback language_selected(index: int);
+    callback reduced_motion_toggled(enabled: bool);
+    callback interface_mode_toggled(advanced: bool);
+}

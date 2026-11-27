@@ -1,0 +1,98 @@
+export global R3xIcons {
+    out property <image> add: @image-url("../assets/icons/add.svg");
+    out property <image> alt_route: @image-url("../assets/icons/alt_route.svg");
+    out property <image> arrow_back: @image-url("../assets/icons/arrow_back.svg");
+    out property <image> arrow_forward: @image-url("../assets/icons/arrow_forward.svg");
+    out property <image> backup: @image-url("../assets/icons/backup.svg");
+    out property <image> battery_saver: @image-url("../assets/icons/battery_saver.svg");
+    out property <image> brightness_auto: @image-url("../assets/icons/brightness_auto.svg");
+    out property <image> cancel: @image-url("../assets/icons/cancel.svg");
+    out property <image> check: @image-url("../assets/icons/check.svg");
+    out property <image> check_circle: @image-url("../assets/icons/check_circle.svg");
+    out property <image> chevron_right: @image-url("../assets/icons/chevron_right.svg");
+    out property <image> close: @image-url("../assets/icons/close.svg");
+    out property <image> content_copy: @image-url("../assets/icons/content_copy.svg");
+    out property <image> contrast: @image-url("../assets/icons/contrast.svg");
+    out property <image> dark_mode: @image-url("../assets/icons/dark_mode.svg");
+    out property <image> delete: @image-url("../assets/icons/delete.svg");
+    out property <image> dns: @image-url("../assets/icons/dns.svg");
+    out property <image> download: @image-url("../assets/icons/download.svg");
+    out property <image> edit: @image-url("../assets/icons/edit.svg");
+    out property <image> error: @image-url("../assets/icons/error.svg");
+    out property <image> expand_more: @image-url("../assets/icons/expand_more.svg");
+    out property <image> home: @image-url("../assets/icons/home.svg");
+    out property <image> hub: @image-url("../assets/icons/hub.svg");
+    out property <image> info: @image-url("../assets/icons/info.svg");
+    out property <image> keep: @image-url("../assets/icons/keep.svg");
+    out property <image> language: @image-url("../assets/icons/language.svg");
+    out property <image> light_mode: @image-url("../assets/icons/light_mode.svg");
+    out property <image> link: @image-url("../assets/icons/link.svg");
+    out property <image> memory: @image-url("../assets/icons/memory.svg");
+    out property <image> menu: @image-url("../assets/icons/menu.svg");
+    out property <image> menu_open: @image-url("../assets/icons/menu_open.svg");
+    out property <image> monitoring: @image-url("../assets/icons/monitoring.svg");
+    out property <image> more_vert: @image-url("../assets/icons/more_vert.svg");
+    out property <image> open_in_new: @image-url("../assets/icons/open_in_new.svg");
+    out property <image> palette: @image-url("../assets/icons/palette.svg");
+    out property <image> pause: @image-url("../assets/icons/pause.svg");
+    out property <image> play_arrow: @image-url("../assets/icons/play_arrow.svg");
+    out property <image> power_settings_new: @image-url("../assets/icons/power_settings_new.svg");
+    out property <image> public: @image-url("../assets/icons/public.svg");
+    out property <image> qr_code_scanner: @image-url("../assets/icons/qr_code_scanner.svg");
+    out property <image> refresh: @image-url("../assets/icons/refresh.svg");
+    out property <image> search: @image-url("../assets/icons/search.svg");
+    out property <image> settings: @image-url("../assets/icons/settings.svg");
+    out property <image> shield: @image-url("../assets/icons/shield.svg");
+    out property <image> show_chart: @image-url("../assets/icons/show_chart.svg");
+    out property <image> signal_cellular_alt: @image-url("../assets/icons/signal_cellular_alt.svg");
+    out property <image> speed: @image-url("../assets/icons/speed.svg");
+    out property <image> star: @image-url("../assets/icons/star.svg");
+    out property <image> storage: @image-url("../assets/icons/storage.svg");
+    out property <image> support_agent: @image-url("../assets/icons/support_agent.svg");
+    out property <image> terminal: @image-url("../assets/icons/terminal.svg");
+    out property <image> tune: @image-url("../assets/icons/tune.svg");
+    out property <image> upload: @image-url("../assets/icons/upload.svg");
+    out property <image> verified_user: @image-url("../assets/icons/verified_user.svg");
+    out property <image> vpn_key: @image-url("../assets/icons/vpn_key.svg");
+    out property <image> warning: @image-url("../assets/icons/warning.svg");
+}
+
+export global R3xFlags {
+    out property <image> de: @image-url("../assets/flags/de.svg");
+    out property <image> pl: @image-url("../assets/flags/pl.svg");
+    out property <image> nl: @image-url("../assets/flags/nl.svg");
+    out property <image> ru: @image-url("../assets/flags/ru.svg");
+    out property <image> ua: @image-url("../assets/flags/ua.svg");
+    out property <image> gb: @image-url("../assets/flags/gb.svg");
+    out property <image> us: @image-url("../assets/flags/us.svg");
+    out property <image> jp: @image-url("../assets/flags/jp.svg");
+    out property <image> sg: @image-url("../assets/flags/sg.svg");
+    out property <image> ch: @image-url("../assets/flags/ch.svg");
+    out property <image> fi: @image-url("../assets/flags/fi.svg");
+    out property <image> se: @image-url("../assets/flags/se.svg");
+    out property <image> fr: @image-url("../assets/flags/fr.svg");
+    out property <image> ca: @image-url("../assets/flags/ca.svg");
+    out property <image> tr: @image-url("../assets/flags/tr.svg");
+    out property <image> hk: @image-url("../assets/flags/hk.svg");
+    out property <image> xx: @image-url("../assets/flags/xx.svg");
+
+    pure public function by_code(code: string) -> image {
+        if code == "DE" || code == "de" { return root.de; }
+        if code == "PL" || code == "pl" { return root.pl; }
+        if code == "NL" || code == "nl" { return root.nl; }
+        if code == "RU" || code == "ru" { return root.ru; }
+        if code == "UA" || code == "ua" { return root.ua; }
+        if code == "GB" || code == "gb" { return root.gb; }
+        if code == "US" || code == "us" { return root.us; }
+        if code == "JP" || code == "jp" { return root.jp; }
+        if code == "SG" || code == "sg" { return root.sg; }
+        if code == "CH" || code == "ch" { return root.ch; }
+        if code == "FI" || code == "fi" { return root.fi; }
+        if code == "SE" || code == "se" { return root.se; }
+        if code == "FR" || code == "fr" { return root.fr; }
+        if code == "CA" || code == "ca" { return root.ca; }
+        if code == "TR" || code == "tr" { return root.tr; }
+        if code == "HK" || code == "hk" { return root.hk; }
+        return root.xx;
+    }
+}

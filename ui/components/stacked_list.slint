@@ -1,0 +1,67 @@
+import { StateLayerArea } from "@material";
+import { R3xPalette } from "../tokens/palette.slint";
+import { R3xMetrics, R3xMotion } from "../tokens/metrics.slint";
+
+export enum StackPosition {
+    only,
+    first,
+    middle,
+    last,
+}
+
+export component StackedListItem {
+    in property <StackPosition> position: StackPosition.middle;
+    in property <bool> selected: false;
+    in property <bool> clickable: true;
+    in property <length> outer_radius: R3xMetrics.radius_hero;
+    in property <length> min_item_height: 64px;
+
+    callback clicked();
+
+    property <length> top_r: (root.position == StackPosition.only || root.position == StackPosition.first)
+        ? root.outer_radius
+        : R3xMetrics.radius_inner;
+    property <length> bottom_r: (root.position == StackPosition.only || root.position == StackPosition.last)
+        ? root.outer_radius
+        : R3xMetrics.radius_inner;
+
+    min_height: root.min_item_height;
+    accessible-role: list-item;
+    accessible-item-selectable: root.clickable;
+    accessible-item-selected: root.selected;
+
+    Rectangle {
+        background: root.selected ? R3xPalette.primary_container : R3xPalette.surface_container_low;
+        border_top_left_radius: root.top_r;
+        border_top_right_radius: root.top_r;
+        border_bottom_left_radius: root.bottom_r;
+        border_bottom_right_radius: root.bottom_r;
+        clip: true;
+
+        animate background {
+            duration: R3xMetrics.dur_state_change;
+            easing: R3xMotion.ease_standard;
+        }
+
+        StateLayerArea {
+            width: 100%;
+            height: 100%;
+            enabled: root.clickable;
+            visible: root.clickable;
+            color: root.selected ? R3xPalette.on_primary_container : R3xPalette.on_surface;
+
+            clicked => {
+                root.clicked();
+            }
+        }
+
+        HorizontalLayout {
+            padding_left: R3xMetrics.space_lg;
+            padding_right: R3xMetrics.space_lg;
+            padding_top: R3xMetrics.space_md;
+            padding_bottom: R3xMetrics.space_md;
+            spacing: R3xMetrics.space_md;
+            @children
+        }
+    }
+}

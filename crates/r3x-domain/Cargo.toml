@@ -1,0 +1,19 @@
+[package]
+name = "r3x-domain"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+description = "Core domain models, typed connection FSM definitions, and protocol types for R3X"
+
+[dependencies]
+chrono.workspace = true
+ipnet.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+zeroize.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true

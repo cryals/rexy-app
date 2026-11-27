@@ -1,0 +1,593 @@
+import { MaterialText, TonalButton } from "@material";
+import { R3xPalette } from "../tokens/palette.slint";
+import { R3xMetrics } from "../tokens/metrics.slint";
+import { R3xTypography } from "../tokens/typography.slint";
+import { R3xIcons, R3xFlags } from "../tokens/icons.slint";
+import { R3xAppState } from "../state/app_state.slint";
+import { ExpressiveCard, SurfaceTier } from "../components/expressive_card.slint";
+import { ConnectionHeroButton, HeroState } from "../components/connection_hero_button.slint";
+import { ConnectedSegmentedGroup } from "../components/connected_button_group.slint";
+import { StatusPill, StatusTone } from "../components/status_badge.slint";
+import { TrafficAreaChart } from "../components/traffic_chart.slint";
+import { ErrorStateView } from "../components/empty_error_state.slint";
+
+component MetricTile inherits ExpressiveCard {
+    in property <string> label;
+    in property <string> value;
+    in property <string> subtitle;
+    in property <image> icon;
+    in property <color> accent_color: R3xPalette.on_surface_variant;
+
+    corner_radius: R3xMetrics.radius_xl;
+    content_padding: R3xMetrics.space_lg;
+
+    VerticalLayout {
+        spacing: R3xMetrics.space_xs;
+
+        HorizontalLayout {
+            spacing: R3xMetrics.space_sm;
+            alignment: start;
+
+            if root.icon.width > 0 : VerticalLayout {
+                alignment: center;
+                Image {
+                    width: 18px;
+                    height: 18px;
+                    source: root.icon;
+                    colorize: root.accent_color;
+                }
+            }
+
+            MaterialText {
+                text: root.label;
+                style: R3xTypography.label_large;
+                color: R3xPalette.on_surface_variant;
+                vertical_alignment: center;
+            }
+        }
+
+        MaterialText {
+            text: root.value;
+            style: R3xTypography.headline_sm;
+            color: R3xPalette.on_surface;
+        }
+
+        MaterialText {
+            text: root.subtitle;
+            style: R3xTypography.body_sm;
+            color: R3xPalette.on_surface_variant;
+        }
+    }
+}
+
+component ServerSelectorCard inherits ExpressiveCard {
+    clickable: true;
+    tier: SurfaceTier.high;
+    corner_radius: R3xMetrics.radius_xl;
+    content_padding: R3xMetrics.space_lg;
+
+    HorizontalLayout {
+        spacing: R3xMetrics.space_md;
+        alignment: space_between;
+
+        HorizontalLayout {
+            spacing: R3xMetrics.space_md;
+            horizontal_stretch: 1;
+
+            VerticalLayout {
+                alignment: center;
+                Rectangle {
+                    width: 32px;
+                    height: 22px;
+                    border_radius: 6px;
+                    clip: true;
+
+                    Image {
+                        width: 100%;
+                        height: 100%;
+                        source: R3xFlags.by_code(R3xAppState.server_flag_code);
+                    }
+                }
+            }
+
+            VerticalLayout {
+                alignment: center;
+                spacing: 2px;
+                horizontal_stretch: 1;
+
+                MaterialText {
+                    text: R3xAppState.server_name;
+                    style: R3xTypography.title_md;
+                    color: R3xPalette.on_surface;
+                }
+
+                MaterialText {
+                    text: R3xAppState.server_subtitle;
+                    style: R3xTypography.body_sm;
+                    color: R3xPalette.on_surface_variant;
+                }
+            }
+        }
+
+        HorizontalLayout {
+            spacing: R3xMetrics.space_sm;
+
+            MaterialText {
+                text: R3xAppState.server_latency;
+                style: R3xTypography.label_large;
+                color: R3xAppState.hero_state == HeroState.connected ? R3xPalette.success : R3xPalette.on_surface_variant;
+                vertical_alignment: center;
+            }
+
+            VerticalLayout {
+                alignment: center;
+                Image {
+                    width: 20px;
+                    height: 20px;
+                    source: R3xIcons.chevron_right;
+                    colorize: R3xPalette.on_surface_variant;
+                }
+            }
+        }
+    }
+}
+
+export component HomeScreen {
+    in property <bool> is_desktop: true;
+
+    property <bool> is_connected: R3xAppState.hero_state == HeroState.connected;
+    property <bool> is_error: R3xAppState.hero_state == HeroState.error;
+
+    VerticalLayout {
+        spacing: root.is_desktop ? R3xMetrics.space_lg : R3xMetrics.space_md;
+
+        // Desktop top header bar
+        if root.is_desktop : HorizontalLayout {
+            alignment: space_between;
+            spacing: R3xMetrics.space_lg;
+
+            VerticalLayout {
+                spacing: 2px;
+                MaterialText {
+                    text: R3xAppState.is_ru ? "Обзор подключения" : "Connection overview";
+                    style: R3xTypography.headline_md;
+                    color: R3xPalette.on_surface;
+                }
+                MaterialText {
+                    text: "Many cores. One experience.";
+                    style: R3xTypography.body_md;
+                    color: R3xPalette.on_surface_variant;
+                }
+            }
+
+            HorizontalLayout {
+                spacing: R3xMetrics.space_sm;
+                alignment: end;
+
+                TonalButton {
+                    text: R3xAppState.is_ru ? "Быстрые настройки" : "Quick settings";
+                    icon: R3xIcons.tune;
+                    clicked => { R3xAppState.quick_settings_clicked(); }
+                }
+
+                TonalButton {
+                    text: R3xAppState.is_ru ? "Тест задержки" : "Test latency";
+                    icon: R3xIcons.signal_cellular_alt;
+                    clicked => { R3xAppState.test_latency_clicked(); }
+                }
+            }
+        }
+
+        if root.is_error : ErrorStateView {
+            code: R3xAppState.error_code;
+            title: R3xAppState.is_ru ? "Ошибка подключения" : "Connection failed";
+            message: R3xAppState.error_message;
+            retry_label: R3xAppState.is_ru ? "Повторить" : "Retry";
+            secondary_label: R3xAppState.is_ru ? "Диагностика" : "Open diagnostics";
+            retry_clicked => { R3xAppState.hero_action_clicked(); }
+            secondary_clicked => { R3xAppState.open_diagnostics_clicked(); }
+        }
+
+        // Desktop asymmetric 5/7 primary row
+        if root.is_desktop : HorizontalLayout {
+            spacing: R3xMetrics.space_lg;
+
+            // Left 5/12 column: Hero + Server + Connection Mode
+            VerticalLayout {
+                horizontal_stretch: 5;
+                spacing: R3xMetrics.space_md;
+
+                ExpressiveCard {
+                    tier: root.is_connected ? SurfaceTier.high : SurfaceTier.standard;
+                    corner_radius: R3xMetrics.radius_hero;
+                    content_padding: R3xMetrics.space_xl;
+                    vertical_stretch: 1;
+
+                    VerticalLayout {
+                        spacing: R3xMetrics.space_lg;
+                        alignment: space_between;
+
+                        HorizontalLayout {
+                            alignment: space_between;
+
+                            HorizontalLayout {
+                                spacing: R3xMetrics.space_sm;
+                                VerticalLayout {
+                                    alignment: center;
+                                    Image {
+                                        width: 20px;
+                                        height: 20px;
+                                        source: root.is_connected ? R3xIcons.verified_user : R3xIcons.shield;
+                                        colorize: root.is_connected ? R3xPalette.success : R3xPalette.on_surface_variant;
+                                    }
+                                }
+                                MaterialText {
+                                    text: R3xAppState.status_label;
+                                    style: R3xTypography.title_md;
+                                    color: root.is_connected ? R3xPalette.success : R3xPalette.on_surface_variant;
+                                    vertical_alignment: center;
+                                }
+                            }
+
+                            MaterialText {
+                                text: R3xAppState.session_timer;
+                                style: R3xTypography.headline_sm;
+                                color: root.is_connected ? R3xPalette.on_surface : R3xPalette.on_surface_variant;
+                                vertical_alignment: center;
+                            }
+                        }
+
+                        HorizontalLayout {
+                            alignment: center;
+                            ConnectionHeroButton {
+                                state: R3xAppState.hero_state;
+                                compact: false;
+                                clicked => { R3xAppState.hero_action_clicked(); }
+                            }
+                        }
+
+                        VerticalLayout {
+                            spacing: R3xMetrics.space_xs;
+                            MaterialText {
+                                text: R3xAppState.hero_title;
+                                style: R3xTypography.title_large;
+                                color: R3xPalette.on_surface;
+                                horizontal_alignment: center;
+                            }
+                            MaterialText {
+                                text: R3xAppState.hero_subtitle;
+                                style: R3xTypography.body_md;
+                                color: R3xPalette.on_surface_variant;
+                                horizontal_alignment: center;
+                                wrap: word_wrap;
+                            }
+                        }
+                    }
+                }
+
+                ServerSelectorCard {
+                    clicked => { R3xAppState.open_server_selector(); }
+                }
+
+                ConnectedSegmentedGroup {
+                    items: R3xAppState.connection_modes;
+                    current_index <=> R3xAppState.connection_mode_index;
+                    selected(idx, id) => { R3xAppState.mode_selected(idx, id); }
+                }
+            }
+
+            // Right 7/12 column: Live Traffic Chart + 3-Card Telemetry Strip
+            VerticalLayout {
+                horizontal_stretch: 7;
+                spacing: R3xMetrics.space_md;
+
+                ExpressiveCard {
+                    tier: root.is_connected ? SurfaceTier.high : SurfaceTier.standard;
+                    corner_radius: R3xMetrics.radius_hero;
+                    content_padding: R3xMetrics.space_xl;
+                    vertical_stretch: 1;
+
+                    VerticalLayout {
+                        spacing: R3xMetrics.space_md;
+
+                        HorizontalLayout {
+                            alignment: space_between;
+
+                            VerticalLayout {
+                                spacing: 2px;
+                                MaterialText {
+                                    text: R3xAppState.is_ru ? "Сетевой трафик" : "Live network traffic";
+                                    style: R3xTypography.title_large;
+                                    color: R3xPalette.on_surface;
+                                }
+                                MaterialText {
+                                    text: root.is_connected
+                                        ? (R3xAppState.is_ru ? "Текущая пропускная способность интерфейса" : "Real-time throughput across active interface")
+                                        : (R3xAppState.is_ru ? "Подключитесь для отслеживания трафика" : "Connect to begin capturing interface throughput");
+                                    style: R3xTypography.body_sm;
+                                    color: R3xPalette.on_surface_variant;
+                                }
+                            }
+
+                            HorizontalLayout {
+                                spacing: R3xMetrics.space_lg;
+                                alignment: end;
+
+                                HorizontalLayout {
+                                    spacing: 6px;
+                                    VerticalLayout {
+                                        alignment: center;
+                                        Rectangle { width: 8px; height: 8px; border_radius: 4px; background: R3xPalette.download; }
+                                    }
+                                    MaterialText { text: "Download"; style: R3xTypography.label_medium; color: R3xPalette.on_surface_variant; vertical_alignment: center; }
+                                }
+                                HorizontalLayout {
+                                    spacing: 6px;
+                                    VerticalLayout {
+                                        alignment: center;
+                                        Rectangle { width: 8px; height: 8px; border_radius: 4px; background: R3xPalette.upload; }
+                                    }
+                                    MaterialText { text: "Upload"; style: R3xTypography.label_medium; color: R3xPalette.on_surface_variant; vertical_alignment: center; }
+                                }
+                            }
+                        }
+
+                        TrafficAreaChart {
+                            has_data: R3xAppState.has_traffic_data;
+                            empty_label: R3xAppState.is_ru ? "Нет активной туннельной сессии" : "No active tunnel session";
+                            download_stroke_commands: R3xAppState.download_stroke_path;
+                            download_fill_commands: R3xAppState.download_fill_path;
+                            upload_stroke_commands: R3xAppState.upload_stroke_path;
+                        }
+                    }
+                }
+
+                HorizontalLayout {
+                    spacing: R3xMetrics.space_md;
+
+                    MetricTile {
+                        horizontal_stretch: 1;
+                        tier: root.is_connected ? SurfaceTier.high : SurfaceTier.standard;
+                        label: R3xAppState.is_ru ? "Загрузка" : "Download";
+                        value: R3xAppState.download_speed;
+                        subtitle: R3xAppState.download_total;
+                        icon: R3xIcons.download;
+                        accent_color: R3xPalette.download;
+                    }
+
+                    MetricTile {
+                        horizontal_stretch: 1;
+                        tier: root.is_connected ? SurfaceTier.high : SurfaceTier.standard;
+                        label: R3xAppState.is_ru ? "Отдача" : "Upload";
+                        value: R3xAppState.upload_speed;
+                        subtitle: R3xAppState.upload_total;
+                        icon: R3xIcons.upload;
+                        accent_color: R3xPalette.upload;
+                    }
+
+                    MetricTile {
+                        horizontal_stretch: 1;
+                        tier: root.is_connected ? SurfaceTier.high : SurfaceTier.standard;
+                        label: R3xAppState.is_ru ? "Качество" : "Quality";
+                        value: R3xAppState.quality_value;
+                        subtitle: R3xAppState.quality_detail;
+                        icon: R3xIcons.speed;
+                        accent_color: root.is_connected ? R3xPalette.success : R3xPalette.on_surface_variant;
+                    }
+                }
+            }
+        }
+
+        // Desktop lower 3-card row: Public IP, Active Core, Active Connections
+        if root.is_desktop : HorizontalLayout {
+            spacing: R3xMetrics.space_lg;
+
+            ExpressiveCard {
+                horizontal_stretch: 1;
+                corner_radius: R3xMetrics.radius_xl;
+                content_padding: R3xMetrics.space_lg;
+
+                HorizontalLayout {
+                    alignment: space_between;
+                    VerticalLayout {
+                        spacing: 2px;
+                        MaterialText { text: R3xAppState.is_ru ? "Внешний IPv4" : "Public IPv4"; style: R3xTypography.label_medium; color: R3xPalette.on_surface_variant; }
+                        MaterialText { text: R3xAppState.external_ip; style: R3xTypography.mono_md; color: R3xPalette.on_surface; }
+                        MaterialText { text: R3xAppState.external_ip_location; style: R3xTypography.body_sm; color: R3xPalette.on_surface_variant; }
+                    }
+                    HorizontalLayout {
+                        spacing: R3xMetrics.space_xs;
+                        TonalButton { icon: R3xIcons.content_copy; tooltip: "Copy IP"; clicked => { R3xAppState.copy_ip_clicked(); } }
+                        TonalButton { icon: R3xIcons.refresh; tooltip: "Refresh IP"; clicked => { R3xAppState.refresh_ip_clicked(); } }
+                    }
+                }
+            }
+
+            ExpressiveCard {
+                horizontal_stretch: 1;
+                corner_radius: R3xMetrics.radius_xl;
+                content_padding: R3xMetrics.space_lg;
+
+                HorizontalLayout {
+                    alignment: space_between;
+                    VerticalLayout {
+                        spacing: 2px;
+                        MaterialText { text: R3xAppState.is_ru ? "Активное ядро" : "Active core"; style: R3xTypography.label_medium; color: R3xPalette.on_surface_variant; }
+                        MaterialText { text: R3xAppState.active_core_name; style: R3xTypography.title_md; color: R3xPalette.on_surface; }
+                        MaterialText { text: R3xAppState.active_core_subtitle; style: R3xTypography.body_sm; color: R3xPalette.on_surface_variant; }
+                    }
+                    VerticalLayout {
+                        alignment: center;
+                        StatusPill {
+                            label: R3xAppState.active_core_badge;
+                            tone: root.is_connected ? StatusTone.success : StatusTone.neutral;
+                        }
+                    }
+                }
+            }
+
+            ExpressiveCard {
+                horizontal_stretch: 1;
+                clickable: true;
+                corner_radius: R3xMetrics.radius_xl;
+                content_padding: R3xMetrics.space_lg;
+                clicked => { R3xAppState.open_diagnostics_clicked(); }
+
+                HorizontalLayout {
+                    alignment: space_between;
+                    VerticalLayout {
+                        spacing: 2px;
+                        MaterialText { text: R3xAppState.is_ru ? "Соединения" : "Active connections"; style: R3xTypography.label_medium; color: R3xPalette.on_surface_variant; }
+                        MaterialText { text: R3xAppState.active_sockets_value; style: R3xTypography.title_md; color: R3xPalette.on_surface; }
+                        MaterialText { text: R3xAppState.active_sockets_detail; style: R3xTypography.body_sm; color: R3xPalette.on_surface_variant; }
+                    }
+                    VerticalLayout {
+                        alignment: center;
+                        Image { width: 20px; height: 20px; source: R3xIcons.arrow_forward; colorize: R3xPalette.on_surface_variant; }
+                    }
+                }
+            }
+        }
+
+        // Mobile vertical composition (matching Stitch mobile layouts)
+        if !root.is_desktop : VerticalLayout {
+            spacing: R3xMetrics.space_md;
+
+            ExpressiveCard {
+                tier: root.is_connected ? SurfaceTier.high : SurfaceTier.standard;
+                corner_radius: R3xMetrics.radius_hero;
+                content_padding: R3xMetrics.space_lg;
+
+                VerticalLayout {
+                    spacing: R3xMetrics.space_lg;
+
+                    HorizontalLayout {
+                        alignment: space_between;
+                        HorizontalLayout {
+                            spacing: R3xMetrics.space_sm;
+                            Image {
+                                width: 18px;
+                                height: 18px;
+                                source: root.is_connected ? R3xIcons.verified_user : R3xIcons.shield;
+                                colorize: root.is_connected ? R3xPalette.success : R3xPalette.on_surface_variant;
+                            }
+                            MaterialText {
+                                text: R3xAppState.status_label;
+                                style: R3xTypography.title_sm;
+                                color: root.is_connected ? R3xPalette.success : R3xPalette.on_surface_variant;
+                            }
+                        }
+                        MaterialText {
+                            text: R3xAppState.session_timer;
+                            style: R3xTypography.title_large;
+                            color: root.is_connected ? R3xPalette.on_surface : R3xPalette.on_surface_variant;
+                        }
+                    }
+
+                    HorizontalLayout {
+                        alignment: center;
+                        ConnectionHeroButton {
+                            state: R3xAppState.hero_state;
+                            compact: true;
+                            clicked => { R3xAppState.hero_action_clicked(); }
+                        }
+                    }
+
+                    VerticalLayout {
+                        spacing: 2px;
+                        MaterialText {
+                            text: R3xAppState.hero_title;
+                            style: R3xTypography.title_md;
+                            color: R3xPalette.on_surface;
+                            horizontal_alignment: center;
+                        }
+                        MaterialText {
+                            text: R3xAppState.hero_subtitle;
+                            style: R3xTypography.body_sm;
+                            color: R3xPalette.on_surface_variant;
+                            horizontal_alignment: center;
+                            wrap: word_wrap;
+                        }
+                    }
+                }
+            }
+
+            ServerSelectorCard {
+                clicked => { R3xAppState.open_server_selector(); }
+            }
+
+            ConnectedSegmentedGroup {
+                items: R3xAppState.connection_modes;
+                current_index <=> R3xAppState.connection_mode_index;
+                selected(idx, id) => { R3xAppState.mode_selected(idx, id); }
+            }
+
+            HorizontalLayout {
+                spacing: R3xMetrics.space_md;
+                MetricTile {
+                    horizontal_stretch: 1;
+                    tier: root.is_connected ? SurfaceTier.high : SurfaceTier.standard;
+                    label: R3xAppState.is_ru ? "Загрузка" : "Download";
+                    value: R3xAppState.download_speed;
+                    subtitle: R3xAppState.download_total;
+                    icon: R3xIcons.download;
+                    accent_color: R3xPalette.download;
+                }
+                MetricTile {
+                    horizontal_stretch: 1;
+                    tier: root.is_connected ? SurfaceTier.high : SurfaceTier.standard;
+                    label: R3xAppState.is_ru ? "Отдача" : "Upload";
+                    value: R3xAppState.upload_speed;
+                    subtitle: R3xAppState.upload_total;
+                    icon: R3xIcons.upload;
+                    accent_color: R3xPalette.upload;
+                }
+            }
+
+            ExpressiveCard {
+                corner_radius: R3xMetrics.radius_xl;
+                content_padding: R3xMetrics.space_lg;
+
+                HorizontalLayout {
+                    alignment: space_between;
+                    VerticalLayout {
+                        spacing: 2px;
+                        MaterialText { text: R3xAppState.quality_value; style: R3xTypography.title_md; color: R3xPalette.on_surface; }
+                        MaterialText { text: R3xAppState.quality_detail; style: R3xTypography.body_sm; color: R3xPalette.on_surface_variant; }
+                    }
+                    TonalButton {
+                        text: R3xAppState.is_ru ? "Тест" : "Test latency";
+                        icon: R3xIcons.signal_cellular_alt;
+                        clicked => { R3xAppState.test_latency_clicked(); }
+                    }
+                }
+            }
+
+            HorizontalLayout {
+                spacing: R3xMetrics.space_md;
+                ExpressiveCard {
+                    horizontal_stretch: 1;
+                    corner_radius: R3xMetrics.radius_xl;
+                    content_padding: R3xMetrics.space_lg;
+                    VerticalLayout {
+                        spacing: 2px;
+                        MaterialText { text: R3xAppState.is_ru ? "Ядро" : "Assigned core"; style: R3xTypography.label_medium; color: R3xPalette.on_surface_variant; }
+                        MaterialText { text: R3xAppState.active_core_name; style: R3xTypography.title_md; color: R3xPalette.on_surface; }
+                        MaterialText { text: R3xAppState.active_core_subtitle; style: R3xTypography.body_sm; color: R3xPalette.on_surface_variant; }
+                    }
+                }
+                ExpressiveCard {
+                    horizontal_stretch: 1;
+                    corner_radius: R3xMetrics.radius_xl;
+                    content_padding: R3xMetrics.space_lg;
+                    VerticalLayout {
+                        spacing: 2px;
+                        MaterialText { text: R3xAppState.is_ru ? "Внешний IP" : "External IP"; style: R3xTypography.label_medium; color: R3xPalette.on_surface_variant; }
+                        MaterialText { text: R3xAppState.external_ip; style: R3xTypography.mono_md; color: R3xPalette.on_surface; }
+                        MaterialText { text: R3xAppState.external_ip_location; style: R3xTypography.body_sm; color: R3xPalette.on_surface_variant; }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,154 @@
+import { FilledButton, MaterialText, TonalButton } from "@material";
+import { R3xPalette } from "../tokens/palette.slint";
+import { R3xMetrics } from "../tokens/metrics.slint";
+import { R3xTypography } from "../tokens/typography.slint";
+import { R3xIcons } from "../tokens/icons.slint";
+
+export component EmptyStateView {
+    in property <image> icon: R3xIcons.info;
+    in property <string> title;
+    in property <string> description;
+    in property <string> action_label;
+
+    callback action_clicked();
+
+    Rectangle {
+        background: R3xPalette.surface_container_low;
+        border_radius: R3xMetrics.radius_hero;
+
+        VerticalLayout {
+            padding: R3xMetrics.space_2xl;
+            spacing: R3xMetrics.space_md;
+            alignment: center;
+
+            HorizontalLayout {
+                alignment: center;
+                Rectangle {
+                    width: 56px;
+                    height: 56px;
+                    border_radius: 28px;
+                    background: R3xPalette.primary_container;
+
+                    Image {
+                        width: 28px;
+                        height: 28px;
+                        x: 14px;
+                        y: 14px;
+                        source: root.icon;
+                        colorize: R3xPalette.on_primary_container;
+                    }
+                }
+            }
+
+            MaterialText {
+                text: root.title;
+                style: R3xTypography.title_large;
+                color: R3xPalette.on_surface;
+                horizontal_alignment: center;
+            }
+
+            if root.description != "" : MaterialText {
+                text: root.description;
+                style: R3xTypography.body_medium;
+                color: R3xPalette.on_surface_variant;
+                horizontal_alignment: center;
+                wrap: word_wrap;
+            }
+
+            if root.action_label != "" : HorizontalLayout {
+                alignment: center;
+                padding_top: R3xMetrics.space_sm;
+
+                TonalButton {
+                    text: root.action_label;
+                    clicked => { root.action_clicked(); }
+                }
+            }
+        }
+    }
+}
+
+export component ErrorStateView {
+    in property <string> code;
+    in property <string> title;
+    in property <string> message;
+    in property <string> retry_label: "Retry";
+    in property <string> secondary_label: "Open diagnostics";
+
+    callback retry_clicked();
+    callback secondary_clicked();
+
+    Rectangle {
+        background: R3xPalette.error_container;
+        border_radius: R3xMetrics.radius_hero;
+
+        VerticalLayout {
+            padding: R3xMetrics.space_xl;
+            spacing: R3xMetrics.space_md;
+
+            HorizontalLayout {
+                spacing: R3xMetrics.space_md;
+                alignment: start;
+
+                Image {
+                    width: 24px;
+                    height: 24px;
+                    source: R3xIcons.error;
+                    colorize: R3xPalette.on_error_container;
+                }
+
+                VerticalLayout {
+                    spacing: R3xMetrics.space_xs;
+                    horizontal_stretch: 1;
+
+                    MaterialText {
+                        text: root.title;
+                        style: R3xTypography.title_medium;
+                        color: R3xPalette.on_error_container;
+                    }
+
+                    if root.code != "" : MaterialText {
+                        text: root.code;
+                        style: R3xTypography.mono_sm;
+                        color: R3xPalette.on_error_container;
+                    }
+                }
+            }
+
+            MaterialText {
+                text: root.message;
+                style: R3xTypography.body_medium;
+                color: R3xPalette.on_error_container;
+                wrap: word_wrap;
+            }
+
+            HorizontalLayout {
+                spacing: R3xMetrics.space_sm;
+
+                if root.retry_label != "" : FilledButton {
+                    text: root.retry_label;
+                    clicked => { root.retry_clicked(); }
+                }
+
+                if root.secondary_label != "" : TonalButton {
+                    text: root.secondary_label;
+                    clicked => { root.secondary_clicked(); }
+                }
+            }
+        }
+    }
+}
+
+export component SkeletonPlaceholder {
+    in property <length> bar_height: 16px;
+    in property <length> corner_radius: R3xMetrics.radius_inner;
+
+    min_height: root.bar_height;
+
+    Rectangle {
+        width: 100%;
+        height: root.bar_height;
+        border_radius: root.corner_radius;
+        background: R3xPalette.surface_container_highest;
+    }
+}

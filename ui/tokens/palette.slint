@@ -1,0 +1,167 @@
+import { MaterialPalette, MaterialSchemes, MaterialScheme } from "@material";
+
+export enum R3xThemeMode {
+    system,
+    light,
+    dark,
+    amoled,
+}
+
+export global R3xPalette {
+    in-out property <R3xThemeMode> theme_mode: R3xThemeMode.dark;
+    in-out property <bool> is_dark: true;
+    in-out property <bool> is_amoled: false;
+    in-out property <bool> dynamic_color: false;
+    in-out property <bool> custom_accent_enabled: false;
+    in-out property <color> custom_accent: #CAC3DC;
+
+    // Core M3 Expressive roles mirrored from MaterialPalette for unified token access
+    out property <color> primary: MaterialPalette.primary;
+    out property <color> on_primary: MaterialPalette.on_primary;
+    out property <color> primary_container: MaterialPalette.primary_container;
+    out property <color> on_primary_container: MaterialPalette.on_primary_container;
+    out property <color> secondary: MaterialPalette.secondary;
+    out property <color> on_secondary: MaterialPalette.on_secondary;
+    out property <color> secondary_container: MaterialPalette.secondary_container;
+    out property <color> on_secondary_container: MaterialPalette.on_secondary_container;
+    out property <color> tertiary: MaterialPalette.tertiary;
+    out property <color> on_tertiary: MaterialPalette.on_tertiary;
+    out property <color> tertiary_container: MaterialPalette.tertiary_container;
+    out property <color> on_tertiary_container: MaterialPalette.on_tertiary_container;
+    out property <color> surface: root.is_amoled && root.is_dark ? #000000 : MaterialPalette.surface;
+    out property <color> surface_container_low: root.is_amoled && root.is_dark ? #0C0C0E : MaterialPalette.surface_container_low;
+    out property <color> surface_container: root.is_amoled && root.is_dark ? #121215 : MaterialPalette.surface_container;
+    out property <color> surface_container_high: root.is_amoled && root.is_dark ? #1B1A1E : MaterialPalette.surface_container_high;
+    out property <color> surface_container_highest: root.is_amoled && root.is_dark ? #26252A : MaterialPalette.surface_container_highest;
+    out property <color> on_surface: MaterialPalette.on_surface;
+    out property <color> on_surface_variant: MaterialPalette.on_surface_variant;
+    out property <color> outline: MaterialPalette.outline;
+    out property <color> outline_variant: MaterialPalette.outline_variant;
+    out property <color> error: MaterialPalette.error;
+    out property <color> on_error: MaterialPalette.on_error;
+    out property <color> error_container: MaterialPalette.error_container;
+    out property <color> on_error_container: MaterialPalette.on_error_container;
+
+    // R3X semantic extensions beyond stock Material 3
+    out property <color> amoled_surface: #000000;
+    out property <color> success: root.is_dark ? #95D8AB : #1E6F3D;
+    out property <color> on_success: root.is_dark ? #0D381C : #FFFFFF;
+    out property <color> success_container: root.is_dark ? #1D5130 : #D2F2DC;
+    out property <color> on_success_container: root.is_dark ? #B9F5CC : #092914;
+
+    out property <color> warning: root.is_dark ? #F4BE76 : #8C5400;
+    out property <color> on_warning: root.is_dark ? #462800 : #FFFFFF;
+    out property <color> warning_container: root.is_dark ? #663D00 : #FFE6C2;
+    out property <color> on_warning_container: root.is_dark ? #FFE6C2 : #2C1800;
+
+    out property <color> download: root.is_dark ? #8FD5C5 : #2E6B5E;
+    out property <color> upload: root.is_dark ? #C2B9E3 : #5C547A;
+    out property <color> grid_line: root.outline_variant.with_alpha(0.35);
+
+    pure public function r3x_schemes(accent: color, use_accent: bool, amoled: bool) -> MaterialSchemes {
+        return {
+            light: {
+                primary: use_accent ? accent : #4A4459,
+                surfaceTint: use_accent ? accent : #4A4459,
+                onPrimary: #FFFFFF,
+                primaryContainer: #E6E0F0,
+                onPrimaryContainer: #1A1626,
+                secondary: #5F5D65,
+                onSecondary: #FFFFFF,
+                secondaryContainer: #E6E1E6,
+                onSecondaryContainer: #1B1B1F,
+                tertiary: #6D585E,
+                onTertiary: #FFFFFF,
+                tertiaryContainer: #E9E0EA,
+                onTertiaryContainer: #1E1A22,
+                error: #B3261E,
+                onError: #FFFFFF,
+                errorContainer: #F9DEDC,
+                onErrorContainer: #410E0B,
+                background: #FCF8FD,
+                onBackground: #1C1B1F,
+                surface: #FCF8FD,
+                onSurface: #1C1B1F,
+                surfaceVariant: #E4E0E5,
+                onSurfaceVariant: #48454E,
+                outline: #79747E,
+                outlineVariant: #CAC4D0,
+                shadow: #000000,
+                scrim: #000000,
+                inverseSurface: #313033,
+                inverseOnSurface: #F4EFF4,
+                inversePrimary: #CFC3E0,
+                primaryFixed: #E6E0F0,
+                onPrimaryFixed: #1A1626,
+                primaryFixedDim: #CAC3DC,
+                onPrimaryFixedVariant: #4A4459,
+                secondaryFixed: #E6E1E6,
+                onSecondaryFixed: #1B1B1F,
+                secondaryFixedDim: #C8C5CD,
+                onSecondaryFixedVariant: #48464D,
+                tertiaryFixed: #E9E0EA,
+                onTertiaryFixed: #1E1A22,
+                tertiaryFixedDim: #D4BEC3,
+                onTertiaryFixedVariant: #524346,
+                surfaceDim: #DDD9DF,
+                surfaceBright: #FCF8FD,
+                surfaceContainerLowest: #FFFFFF,
+                surfaceContainerLow: #F5F1F6,
+                surfaceContainer: #EFEBF0,
+                surfaceContainerHigh: #E9E5EA,
+                surfaceContainerHighest: #E4E0E5,
+            },
+            dark: {
+                primary: use_accent ? accent : #CAC3DC,
+                surfaceTint: use_accent ? accent : #CAC3DC,
+                onPrimary: #332D41,
+                primaryContainer: #4A4459,
+                onPrimaryContainer: #E7DFF8,
+                secondary: #C8C5CD,
+                onSecondary: #302F36,
+                secondaryContainer: #48464D,
+                onSecondaryContainer: #E4E1EA,
+                tertiary: #D4BEC3,
+                onTertiary: #392A2E,
+                tertiaryContainer: #524346,
+                onTertiaryContainer: #F0DEE2,
+                error: #F2B8B5,
+                onError: #601410,
+                errorContainer: #8C1D18,
+                onErrorContainer: #F9DEDC,
+                background: amoled ? #000000 : #141317,
+                onBackground: #E3E2E7,
+                surface: amoled ? #000000 : #141317,
+                onSurface: #E3E2E7,
+                surfaceVariant: #484550,
+                onSurfaceVariant: #C9C5D1,
+                outline: #938F9B,
+                outlineVariant: #484550,
+                shadow: #000000,
+                scrim: #000000,
+                inverseSurface: #E3E2E7,
+                inverseOnSurface: #313034,
+                inversePrimary: #615B71,
+                primaryFixed: #E7DFF8,
+                onPrimaryFixed: #1A1626,
+                primaryFixedDim: #CAC3DC,
+                onPrimaryFixedVariant: #4A4459,
+                secondaryFixed: #E4E1EA,
+                onSecondaryFixed: #1B1B1F,
+                secondaryFixedDim: #C8C5CD,
+                onSecondaryFixedVariant: #48464D,
+                tertiaryFixed: #F0DEE2,
+                onTertiaryFixed: #1E1A22,
+                tertiaryFixedDim: #D4BEC3,
+                onTertiaryFixedVariant: #524346,
+                surfaceDim: amoled ? #000000 : #141317,
+                surfaceBright: #3B393E,
+                surfaceContainerLowest: amoled ? #000000 : #0E0D11,
+                surfaceContainerLow: amoled ? #0C0C0E : #1C1B1F,
+                surfaceContainer: amoled ? #121215 : #201F23,
+                surfaceContainerHigh: amoled ? #1B1A1E : #2B292D,
+                surfaceContainerHighest: amoled ? #26252A : #353438,
+            },
+        };
+    }
+}

@@ -1,0 +1,21 @@
+[package]
+name = "r3x-engine"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+description = "Central R3X engine: typed 10-state FSM, core adapter contract, capability negotiation, event bus, and redacted log hub"
+
+[dependencies]
+chrono.workspace = true
+parking_lot.workspace = true
+r3x-domain.workspace = true
+r3x-security.workspace = true
+serde.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

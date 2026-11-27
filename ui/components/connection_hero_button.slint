@@ -1,0 +1,102 @@
+import { CircularProgressIndicator } from "@material";
+import { R3xPalette } from "../tokens/palette.slint";
+import { R3xMetrics, R3xMotion } from "../tokens/metrics.slint";
+import { R3xIcons } from "../tokens/icons.slint";
+
+export enum HeroState {
+    disconnected,
+    busy,
+    connected,
+    error,
+}
+
+export component ConnectionHeroButton {
+    in property <HeroState> state: HeroState.disconnected;
+    in property <bool> compact: false;
+    in property <bool> enabled: true;
+
+    callback clicked();
+
+    property <length> size: root.compact ? 128px : 136px;
+
+    width: root.size;
+    height: root.size;
+    accessible-role: button;
+    accessible-label: root.state == HeroState.connected ? "Disconnect"
+        : root.state == HeroState.busy ? "Cancel connection"
+        : "Connect";
+    accessible-enabled: root.enabled;
+    accessible-action-default => { if (root.enabled) { root.clicked(); } }
+
+    touch := TouchArea {
+        width: 100%;
+        height: 100%;
+        enabled: root.enabled;
+        mouse_cursor: root.enabled ? pointer : default;
+
+        clicked => {
+            root.clicked();
+        }
+    }
+
+    container := Rectangle {
+        width: touch.pressed ? root.size * 0.96 : root.size;
+        height: self.width;
+        x: (parent.width - self.width) / 2;
+        y: (parent.height - self.height) / 2;
+
+        animate width {
+            duration: R3xMetrics.dur_state_change;
+            easing: R3xMotion.ease_standard;
+        }
+
+        // Disconnected / Busy / Error Expressive 32px squircle shape
+        if root.state != HeroState.connected : squircle := Rectangle {
+            width: 100%;
+            height: 100%;
+            border_radius: R3xMetrics.radius_2xl;
+            background: root.state == HeroState.error ? R3xPalette.error_container
+                : root.state == HeroState.busy ? R3xPalette.secondary_container
+                : touch.has_hover ? R3xPalette.primary
+                : R3xPalette.primary_container;
+
+            animate background {
+                duration: R3xMetrics.dur_shape_morph;
+                easing: R3xMotion.ease_morph;
+            }
+
+            if root.state == HeroState.busy : CircularProgressIndicator {
+                width: parent.width - 20px;
+                height: parent.height - 20px;
+                x: 10px;
+                y: 10px;
+                indeterminate: true;
+            }
+        }
+
+        // Connected 12-lobe organic scalloped Material 3 Expressive path
+        if root.state == HeroState.connected : Path {
+            width: 100%;
+            height: 100%;
+            viewbox_width: 128;
+            viewbox_height: 128;
+            fill: R3xPalette.primary;
+            commands: "M64 4C77.5 4 86.2 12.6 95.8 17.5C105.4 22.4 116.8 24.1 121.7 33.7C126.6 43.3 121.2 54.4 123.3 64C125.4 73.6 126.6 84.7 121.7 94.3C116.8 103.9 105.4 105.6 95.8 110.5C86.2 115.4 77.5 124 64 124C50.5 124 41.8 115.4 32.2 110.5C22.6 105.6 11.2 103.9 6.3 94.3C1.4 84.7 2.6 73.6 4.7 64C6.8 54.4 1.4 43.3 6.3 33.7C11.2 24.1 22.6 22.4 32.2 17.5C41.8 12.6 50.5 4 64 4Z";
+        }
+
+        Image {
+            width: root.compact ? 44px : 48px;
+            height: self.width;
+            x: (parent.width - self.width) / 2;
+            y: (parent.height - self.height) / 2;
+            source: root.state == HeroState.busy ? R3xIcons.close
+                : root.state == HeroState.error ? R3xIcons.refresh
+                : R3xIcons.power_settings_new;
+            colorize: root.state == HeroState.connected ? R3xPalette.on_primary
+                : root.state == HeroState.error ? R3xPalette.on_error_container
+                : root.state == HeroState.busy ? R3xPalette.on_secondary_container
+                : touch.has_hover ? R3xPalette.on_primary
+                : R3xPalette.on_primary_container;
+        }
+    }
+}

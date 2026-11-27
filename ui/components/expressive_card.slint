@@ -1,0 +1,60 @@
+import { StateLayerArea } from "@material";
+import { R3xPalette } from "../tokens/palette.slint";
+import { R3xMetrics, R3xMotion } from "../tokens/metrics.slint";
+
+export enum SurfaceTier {
+    lowest,
+    low,
+    standard,
+    high,
+    highest,
+}
+
+export component ExpressiveCard {
+    in property <SurfaceTier> tier: SurfaceTier.standard;
+    in property <length> corner_radius: R3xMetrics.radius_hero;
+    in property <bool> clickable: false;
+    in property <bool> outlined: false;
+    in property <length> content_padding: R3xMetrics.space_xl;
+
+    callback clicked();
+
+    forward_focus: state_layer;
+
+    property <color> resolved_bg: root.tier == SurfaceTier.lowest ? R3xPalette.surface
+        : root.tier == SurfaceTier.low ? R3xPalette.surface_container_low
+        : root.tier == SurfaceTier.high ? R3xPalette.surface_container_high
+        : root.tier == SurfaceTier.highest ? R3xPalette.surface_container_highest
+        : R3xPalette.surface_container;
+
+    background_rect := Rectangle {
+        background: root.resolved_bg;
+        border_radius: root.corner_radius;
+        border_width: root.outlined ? 1px : 0px;
+        border_color: R3xPalette.outline_variant;
+        clip: true;
+
+        animate background {
+            duration: R3xMetrics.dur_state_change;
+            easing: R3xMotion.ease_standard;
+        }
+
+        state_layer := StateLayerArea {
+            width: 100%;
+            height: 100%;
+            border_radius: root.corner_radius;
+            visible: root.clickable;
+            enabled: root.clickable;
+            color: R3xPalette.on_surface;
+
+            clicked => {
+                root.clicked();
+            }
+        }
+
+        VerticalLayout {
+            padding: root.content_padding;
+            @children
+        }
+    }
+}

@@ -1,0 +1,239 @@
+import { MaterialText, StateLayerArea, Switch } from "@material";
+import { R3xPalette } from "../tokens/palette.slint";
+import { R3xMetrics } from "../tokens/metrics.slint";
+import { R3xTypography } from "../tokens/typography.slint";
+import { R3xIcons } from "../tokens/icons.slint";
+import { R3xAppState } from "../state/app_state.slint";
+import { ExpressiveCard, SurfaceTier } from "../components/expressive_card.slint";
+import { StackedListItem, StackPosition } from "../components/stacked_list.slint";
+import { ConnectedSegmentedGroup } from "../components/connected_button_group.slint";
+
+component ThemeSwatchCard {
+    in property <string> label;
+    in property <image> icon;
+    in property <color> preview_bg;
+    in property <bool> selected;
+
+    callback clicked();
+
+    horizontal_stretch: 1;
+    accessible-role: button;
+    accessible-label: root.label;
+    accessible-checkable: true;
+    accessible-checked: root.selected;
+
+    Rectangle {
+        background: root.selected ? R3xPalette.primary_container : R3xPalette.surface_container_low;
+        border_radius: R3xMetrics.radius_xl;
+        border_width: root.selected ? 0px : 1px;
+        border_color: R3xPalette.outline_variant;
+        clip: true;
+
+        StateLayerArea {
+            width: 100%;
+            height: 100%;
+            color: root.selected ? R3xPalette.on_primary_container : R3xPalette.on_surface;
+
+            VerticalLayout {
+                padding: R3xMetrics.space_md;
+                spacing: R3xMetrics.space_sm;
+
+                Rectangle {
+                    height: 48px;
+                    border_radius: R3xMetrics.radius_inner;
+                    background: root.preview_bg;
+                    border_width: 1px;
+                    border_color: R3xPalette.outline_variant;
+
+                    Image {
+                        width: 20px;
+                        height: 20px;
+                        x: (parent.width - self.width) / 2;
+                        y: (parent.height - self.height) / 2;
+                        source: root.icon;
+                        colorize: root.label == "Light" ? #1C1B1F : #E3E2E7;
+                    }
+                }
+
+                MaterialText {
+                    text: root.label;
+                    style: R3xTypography.label_large;
+                    color: root.selected ? R3xPalette.on_primary_container : R3xPalette.on_surface;
+                    horizontal_alignment: center;
+                }
+            }
+
+            clicked => { root.clicked(); }
+        }
+    }
+}
+
+export component SettingsFoundationScreen {
+    in property <bool> is_desktop: true;
+
+    VerticalLayout {
+        spacing: R3xMetrics.space_lg;
+
+        MaterialText {
+            text: R3xAppState.is_ru ? "Настройки" : "Settings";
+            style: R3xTypography.headline_md;
+            color: R3xPalette.on_surface;
+        }
+
+        ExpressiveCard {
+            tier: SurfaceTier.standard;
+            corner_radius: R3xMetrics.radius_hero;
+            content_padding: R3xMetrics.space_xl;
+
+            VerticalLayout {
+                spacing: R3xMetrics.space_lg;
+
+                VerticalLayout {
+                    spacing: 2px;
+                    MaterialText {
+                        text: R3xAppState.is_ru ? "Внешний вид" : "Appearance";
+                        style: R3xTypography.title_large;
+                        color: R3xPalette.on_surface;
+                    }
+                    MaterialText {
+                        text: R3xAppState.is_ru ? "Тема Material 3 Expressive, язык и анимации" : "Theme mode, Material 3 Expressive palette, language, and motion";
+                        style: R3xTypography.body_md;
+                        color: R3xPalette.on_surface_variant;
+                    }
+                }
+
+                HorizontalLayout {
+                    spacing: R3xMetrics.space_md;
+
+                    ThemeSwatchCard {
+                        label: R3xAppState.is_ru ? "Система" : "System";
+                        icon: R3xIcons.brightness_auto;
+                        preview_bg: R3xPalette.surface_container_highest;
+                        selected: R3xAppState.theme_mode_index == 0;
+                        clicked => { R3xAppState.theme_selected(0); }
+                    }
+                    ThemeSwatchCard {
+                        label: "Light";
+                        icon: R3xIcons.light_mode;
+                        preview_bg: #FCF8FD;
+                        selected: R3xAppState.theme_mode_index == 1;
+                        clicked => { R3xAppState.theme_selected(1); }
+                    }
+                    ThemeSwatchCard {
+                        label: "Dark";
+                        icon: R3xIcons.dark_mode;
+                        preview_bg: #141317;
+                        selected: R3xAppState.theme_mode_index == 2;
+                        clicked => { R3xAppState.theme_selected(2); }
+                    }
+                    ThemeSwatchCard {
+                        label: "AMOLED";
+                        icon: R3xIcons.contrast;
+                        preview_bg: #000000;
+                        selected: R3xAppState.theme_mode_index == 3;
+                        clicked => { R3xAppState.theme_selected(3); }
+                    }
+                }
+
+                VerticalLayout {
+                    spacing: R3xMetrics.space_xs;
+
+                    StackedListItem {
+                        position: StackPosition.first;
+                        clickable: false;
+                        outer_radius: R3xMetrics.radius_xl;
+
+                        HorizontalLayout {
+                            horizontal_stretch: 1;
+                            alignment: space_between;
+                            VerticalLayout {
+                                alignment: center;
+                                MaterialText {
+                                    text: R3xAppState.is_ru ? "Язык интерфейса" : "Interface language";
+                                    style: R3xTypography.body_large;
+                                    color: R3xPalette.on_surface;
+                                }
+                                MaterialText {
+                                    text: R3xAppState.is_ru ? "English / Русский" : "English / Русский";
+                                    style: R3xTypography.body_sm;
+                                    color: R3xPalette.on_surface_variant;
+                                }
+                            }
+                            ConnectedSegmentedGroup {
+                                width: 200px;
+                                items: [
+                                    { id: "en", label: "English", enabled: true, disabled_reason: "" },
+                                    { id: "ru", label: "Русский", enabled: true, disabled_reason: "" },
+                                ];
+                                current_index <=> R3xAppState.language_index;
+                                selected(idx, _id) => { R3xAppState.language_selected(idx); }
+                            }
+                        }
+                    }
+
+                    StackedListItem {
+                        position: StackPosition.middle;
+                        clickable: false;
+                        outer_radius: R3xMetrics.radius_xl;
+
+                        HorizontalLayout {
+                            horizontal_stretch: 1;
+                            alignment: space_between;
+                            VerticalLayout {
+                                alignment: center;
+                                MaterialText {
+                                    text: R3xAppState.is_ru ? "Расширенный режим" : "Advanced interface mode";
+                                    style: R3xTypography.body_large;
+                                    color: R3xPalette.on_surface;
+                                }
+                                MaterialText {
+                                    text: R3xAppState.is_ru ? "Показывать правила маршрутизации, выбор ядер и журналы" : "Expose routing rules, core selector, and raw diagnostics";
+                                    style: R3xTypography.body_sm;
+                                    color: R3xPalette.on_surface_variant;
+                                }
+                            }
+                            VerticalLayout {
+                                alignment: center;
+                                Switch {
+                                    checked: R3xAppState.interface_advanced;
+                                    checked_state_changed(v) => { R3xAppState.interface_mode_toggled(v); }
+                                }
+                            }
+                        }
+                    }
+
+                    StackedListItem {
+                        position: StackPosition.last;
+                        clickable: false;
+                        outer_radius: R3xMetrics.radius_xl;
+
+                        HorizontalLayout {
+                            horizontal_stretch: 1;
+                            alignment: space_between;
+                            VerticalLayout {
+                                alignment: center;
+                                MaterialText {
+                                    text: R3xAppState.is_ru ? "Уменьшение анимаций" : "Reduced motion";
+                                    style: R3xTypography.body_large;
+                                    color: R3xPalette.on_surface;
+                                }
+                                MaterialText {
+                                    text: R3xAppState.is_ru ? "Отключить морфинг форм и второстепенные переходы" : "Disable shape-morphing and non-essential transitions";
+                                    style: R3xTypography.body_sm;
+                                    color: R3xPalette.on_surface_variant;
+                                }
+                            }
+                            VerticalLayout {
+                                alignment: center;
+                                Switch {
+                                    checked: R3xAppState.reduced_motion;
+                                    checked_state_changed(v) => { R3xAppState.reduced_motion_toggled(v); }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,30 +1,95 @@
-[package]
-name = "my_app"
+[workspace]
+resolver = "3"
+members = [
+    ".",
+    "crates/r3x-domain",
+    "crates/r3x-security",
+    "crates/r3x-storage",
+    "crates/r3x-ipc",
+    "crates/r3x-engine",
+]
+
+[workspace.package]
 version = "0.1.0"
 edition = "2024"
+license = "GPL-3.0-only"
+repository = "https://github.com/cryals/rexy-app"
+
+[workspace.dependencies]
+argon2 = { version = "0.6", features = ["zeroize"] }
+base64 = "0.23"
+chacha20poly1305 = { version = "0.11", features = ["zeroize"] }
+chrono = { version = "0.4", features = ["serde"] }
+directories = "6.0"
+flate2 = "1.1"
+hex = "0.4"
+i-slint-backend-testing = "1.19.1"
+interprocess = { version = "2.4", features = ["tokio"] }
+ipnet = { version = "2.12", features = ["serde"] }
+parking_lot = "0.13"
+proptest = "1.12"
+rand = "0.10"
+regex = "1.13"
+rusqlite = { version = "0.43", default-features = false, features = ["bundled", "cache"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sha2 = "0.11"
+slint = { version = "1.19.1", features = ["backend-android-activity-06"] }
+slint-build = "1.19.1"
+subtle = "2.6"
+tar = "0.4"
+tempfile = "3"
+thiserror = "2.0"
+tokio = { version = "1.54", features = ["rt-multi-thread", "macros", "sync", "time", "process", "net", "io-util", "fs", "signal"] }
+tokio-util = "0.7"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "fmt"] }
+url = { version = "2.5", features = ["serde"] }
+uuid = { version = "1.29", features = ["v4", "serde"] }
+zeroize = { version = "1.9", features = ["derive"] }
+zip = { version = "9.8", default-features = false, features = ["deflate"] }
+
+r3x-domain = { path = "crates/r3x-domain" }
+r3x-security = { path = "crates/r3x-security" }
+r3x-storage = { path = "crates/r3x-storage" }
+r3x-engine = { path = "crates/r3x-engine" }
+
+[package]
+name = "r3x-app"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+description = "R3X (Rexy) — Rust-powered Expressive Proxy: Universal Multi-Core VPN & Proxy Client"
 
 [lib]
 crate-type = ["lib", "cdylib"]
 path = "src/lib.rs"
-name = "my_app_lib"
+name = "r3x_app_lib"
 
 [[bin]]
 path = "src/main.rs"
-name = "my_app"
+name = "r3x-app"
 
 [dependencies]
-slint = { version = "1.19", features = ["backend-android-activity-06"] }
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen = { version = "0.2" }
-console_error_panic_hook = "0.1.5"
+r3x-domain.workspace = true
+r3x-engine.workspace = true
+r3x-storage.workspace = true
+slint.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
 
 [build-dependencies]
-slint-build = { version = "1.19" }
+slint-build.workspace = true
+
+[dev-dependencies]
+i-slint-backend-testing.workspace = true
+tempfile.workspace = true
 
 [package.metadata.android]
-package = "dev.slint.material_template"
-apk_name = "my_app"
+package = "dev.rexy.r3x"
+apk_name = "r3x"
 
 [package.metadata.android.application]
-label = "My Application"
+label = "R3X"

@@ -1,73 +1,54 @@
-# Agent Instructions
+# R3X (Rexy) — Agent & Engineering Guide
 
-This project uses [Slint](https://slint.dev) for its user interface.
-It started from the [material-rust-template](https://github.com/slint-ui/material-rust-template) template.
-This file may be older than the code.
-Where they disagree, trust the code, and update this file.
+**Product:** R3X (*Rust-powered Expressive Proxy*) — *"Many cores. One experience."*
+**License:** GNU General Public License v3.0 (`GPL-3.0-only`)
 
-## Install the Slint Plugin
+## Workspace Layout
 
-Before you work on the UI, install the Slint plugin from [slint-ui/ai-plugins](https://github.com/slint-ui/ai-plugins).
-It teaches you the `.slint` language and its pitfalls.
-It also lets you search the documentation, and lets you render and drive the running UI.
-If it isn't installed, suggest that the user install it:
-
-```sh
-# Claude Code
-/plugin marketplace add slint-ui/ai-plugins
-/plugin install slint@slint
-
-# Codex
-codex plugin marketplace add slint-ui/ai-plugins
-codex plugin add slint@slint
-
-# Other agents
-npx skills add slint-ui/ai-plugins --skill slint
+```text
+rexy-app/
+├── Cargo.toml                 # Cargo workspace root + r3x-app GUI binary/cdylib
+├── rust-toolchain.toml        # Pinned Rust 1.100.0 + rustfmt + clippy
+├── deny.toml                  # cargo-deny license/ban/advisory policy
+├── material-1.1.0/            # Read-only Slint Material 3 kit (import via @material; do NOT edit)
+├── crates/
+│   ├── r3x-domain/            # Pure domain models, 10-state FSM, protocol enums, ring buffers
+│   ├── r3x-security/          # Secret redaction, safe archive extraction, SHA-256, AEAD backups
+│   ├── r3x-storage/           # SQLite migrations, corruption recovery, platform SecretStore
+│   ├── r3x-ipc/               # Versioned token-authenticated local IPC (Named Pipe / Unix socket)
+│   └── r3x-engine/            # Central async engine, CoreAdapter trait, CoreSelector, LogHub
+├── ui/
+│   ├── main.slint             # MainWindow entry + theme init
+│   ├── layouts/app_shell.slint# Adaptive desktop drawer/rail & mobile bottom bar
+│   ├── state/app_state.slint  # Global Slint state & Rust callbacks
+│   ├── tokens/                # R3xPalette, R3xMetrics, R3xTypography, R3xIcons, R3xFlags
+│   ├── themes/                # System / Light / Dark / AMOLED theme switcher
+│   ├── components/            # Material 3 Expressive custom widgets
+│   ├── screens/               # Screen implementations
+│   └── assets/                # Generated SVG Material Symbols icons & country flags
+├── src/                       # Desktop & Android Slint bootstrap (android_main entry)
+├── tests/                     # Headless UI tests (i-slint-backend-testing)
+└── docs/                      # Architecture, ADRs, status tracking, test & build reports
 ```
 
-## Turning the Template Into a Project
+## Mandatory Engineering Rules
 
-Check whether the project still carries parts of the template, and offer to replace them:
+1. **No fake functionality:** Never return dummy success, simulated speeds, or stub latencies in production paths. Unavailable metrics must render `N/A` or `Idle`.
+2. **Error safety:** No `unwrap()` or `expect()` in library/production crates (`r3x-*`, `src/`). Use typed `R3xError`.
+3. **Security:** Never bypass TLS verification by default, never fall back silently to plaintext secret storage, and route every log/diagnostic export through `r3x_security::Redactor`.
+4. **Read-only reference assets:** Never modify `material-1.1.0/` or `D:\Rexy\stitch_r3x_multi_core_vpn_client/`.
+5. **Rust Edition 2024:** Always use `#[unsafe(no_mangle)]` on FFI/JNI/Android exports and avoid `gen` as an identifier.
 
-- `README.md` still describes the template.
-  Rewrite it for this application: what it does, how to build and run it, and screenshots.
-- The Git history is the template's, for example when `git log` shows commits from the Slint developers.
-  Offer to start a fresh history, and ask before you remove the old one.
-- Names from the template, such as `my_app`, `my_app_lib`, and `dev.slint.material_template`, remain in the build files and code.
-- This file still describes the template.
-  Update it for this project, and remove this section when nothing of the template is left.
+## Build & Verification Commands
 
-Do nothing here if the project has already done these steps.
-
-## Build and Run
-
-```sh
-cargo build
-cargo run
+```powershell
+cargo fmt --all -- --check
+cargo check --workspace --locked
+cargo clippy --workspace --all-targets --locked -- -D warnings
+cargo test --workspace --locked
+cargo deny check licenses bans sources
 ```
 
-## Live Preview
+## Session Continuity
 
-While you work on the UI, build and run the application with live preview.
-It compiles much faster, because the `.slint` files aren't compiled to native code.
-
-```sh
-SLINT_LIVE_PREVIEW=1 cargo run --features slint/live-preview
-```
-
-Use the same environment variable and feature with `cargo build` and `cargo check`.
-
-The running application reloads the `.slint` files when you save them, with no rebuild or restart.
-The state your code set, such as properties and models, stays in place.
-Rebuild when you rename a property or callback that the code uses.
-Use live preview only during development, and keep it out of the build files.
-
-## Working on the UI
-
-- Check `.slint` changes without a full build with `slint-viewer --check .`.
-- Look at a render before you call UI work done:
-  use the plugin's preview, or a screenshot of the live-preview application.
-- When the UI changes visibly, update the screenshots in `README.md`.
-- Format changed `.slint` files with `slint-lsp format -i <file>`.
-- `material-1.1.0/` is a copy of the [Material component library](https://material.slint.dev/).
-  Import it with `@material`, and don't edit it.
+Before resuming multi-wave development, read this file (`AGENTS.md`) alongside `docs/IMPLEMENTATION-STATUS.md` and `docs/DEVELOPMENT-PLAN.md` to continue from the last verified wave.

@@ -1,0 +1,84 @@
+import { MaterialText } from "@material";
+import { R3xPalette } from "../tokens/palette.slint";
+import { R3xMetrics } from "../tokens/metrics.slint";
+import { R3xTypography } from "../tokens/typography.slint";
+import { R3xIcons } from "../tokens/icons.slint";
+
+export component TrafficAreaChart {
+    in property <bool> has_data: false;
+    in property <string> empty_label: "No active tunnel session";
+    in property <string> download_stroke_commands;
+    in property <string> download_fill_commands;
+    in property <string> upload_stroke_commands;
+    in property <float> viewbox_w: 600;
+    in property <float> viewbox_h: 180;
+
+    min_height: 180px;
+
+    if !root.has_data : Rectangle {
+        background: R3xPalette.surface_container_low;
+        border_radius: R3xMetrics.radius_xl;
+        min_height: 180px;
+
+        VerticalLayout {
+            alignment: center;
+            spacing: R3xMetrics.space_sm;
+
+            HorizontalLayout {
+                alignment: center;
+                Image {
+                    width: 32px;
+                    height: 32px;
+                    source: R3xIcons.show_chart;
+                    colorize: R3xPalette.on_surface_variant;
+                }
+            }
+
+            MaterialText {
+                text: root.empty_label;
+                style: R3xTypography.body_medium;
+                color: R3xPalette.on_surface_variant;
+                horizontal_alignment: center;
+            }
+        }
+    }
+
+    if root.has_data : Rectangle {
+        min_height: 180px;
+        clip: true;
+
+        // Horizontal reference lines (25%, 50%, 75%)
+        Rectangle { y: parent.height * 0.25; width: 100%; height: 1px; background: R3xPalette.grid_line; }
+        Rectangle { y: parent.height * 0.50; width: 100%; height: 1px; background: R3xPalette.grid_line; }
+        Rectangle { y: parent.height * 0.75; width: 100%; height: 1px; background: R3xPalette.grid_line; }
+
+        if root.download_fill_commands != "" : Path {
+            width: 100%;
+            height: 100%;
+            viewbox_width: root.viewbox_w;
+            viewbox_height: root.viewbox_h;
+            fill: R3xPalette.download.with_alpha(0.16);
+            commands: root.download_fill_commands;
+        }
+
+        if root.download_stroke_commands != "" : Path {
+            width: 100%;
+            height: 100%;
+            viewbox_width: root.viewbox_w;
+            viewbox_height: root.viewbox_h;
+            stroke: R3xPalette.download;
+            stroke_width: 2.5px;
+            commands: root.download_stroke_commands;
+        }
+
+        if root.upload_stroke_commands != "" : Path {
+            width: 100%;
+            height: 100%;
+            viewbox_width: root.viewbox_w;
+            viewbox_height: root.viewbox_h;
+            stroke: R3xPalette.upload;
+            stroke_width: 2.5px;
+            commands: root.upload_stroke_commands;
+        }
+    }
+}

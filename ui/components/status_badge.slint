@@ -1,0 +1,115 @@
+import { MaterialText } from "@material";
+import { R3xPalette } from "../tokens/palette.slint";
+import { R3xMetrics } from "../tokens/metrics.slint";
+import { R3xTypography } from "../tokens/typography.slint";
+
+export enum StatusTone {
+    neutral,
+    primary,
+    success,
+    warning,
+    error,
+}
+
+export component StatusPill {
+    in property <string> label;
+    in property <StatusTone> tone: StatusTone.neutral;
+    in property <image> icon;
+    in property <bool> show_dot: true;
+
+    property <color> bg_color: root.tone == StatusTone.success ? R3xPalette.success_container
+        : root.tone == StatusTone.warning ? R3xPalette.warning_container
+        : root.tone == StatusTone.error ? R3xPalette.error_container
+        : root.tone == StatusTone.primary ? R3xPalette.primary_container
+        : R3xPalette.surface_container_highest;
+
+    property <color> fg_color: root.tone == StatusTone.success ? R3xPalette.on_success_container
+        : root.tone == StatusTone.warning ? R3xPalette.on_warning_container
+        : root.tone == StatusTone.error ? R3xPalette.on_error_container
+        : root.tone == StatusTone.primary ? R3xPalette.on_primary_container
+        : R3xPalette.on_surface_variant;
+
+    property <color> dot_color: root.tone == StatusTone.success ? R3xPalette.success
+        : root.tone == StatusTone.warning ? R3xPalette.warning
+        : root.tone == StatusTone.error ? R3xPalette.error
+        : root.tone == StatusTone.primary ? R3xPalette.primary
+        : R3xPalette.outline;
+
+    Rectangle {
+        background: root.bg_color;
+        border_radius: R3xMetrics.radius_full;
+        min_height: 26px;
+
+        HorizontalLayout {
+            padding_left: R3xMetrics.space_md;
+            padding_right: R3xMetrics.space_md;
+            padding_top: R3xMetrics.space_xs;
+            padding_bottom: R3xMetrics.space_xs;
+            spacing: 6px;
+            alignment: center;
+
+            if root.icon.width > 0 : VerticalLayout {
+                alignment: center;
+                Image {
+                    width: 14px;
+                    height: 14px;
+                    source: root.icon;
+                    colorize: root.fg_color;
+                }
+            }
+
+            if root.icon.width == 0 && root.show_dot : VerticalLayout {
+                alignment: center;
+                Rectangle {
+                    width: 8px;
+                    height: 8px;
+                    border_radius: 4px;
+                    background: root.dot_color;
+                }
+            }
+
+            MaterialText {
+                text: root.label;
+                style: R3xTypography.label_medium;
+                color: root.fg_color;
+                vertical_alignment: center;
+            }
+        }
+    }
+}
+
+export component CompactTag {
+    in property <string> text;
+    in property <StatusTone> tone: StatusTone.neutral;
+
+    property <color> bg: root.tone == StatusTone.success ? R3xPalette.success_container
+        : root.tone == StatusTone.warning ? R3xPalette.warning_container
+        : root.tone == StatusTone.error ? R3xPalette.error_container
+        : root.tone == StatusTone.primary ? R3xPalette.primary_container
+        : R3xPalette.surface_container_highest;
+
+    property <color> fg: root.tone == StatusTone.success ? R3xPalette.on_success_container
+        : root.tone == StatusTone.warning ? R3xPalette.on_warning_container
+        : root.tone == StatusTone.error ? R3xPalette.on_error_container
+        : root.tone == StatusTone.primary ? R3xPalette.on_primary_container
+        : R3xPalette.on_surface_variant;
+
+    Rectangle {
+        background: root.bg;
+        border_radius: R3xMetrics.radius_inner;
+
+        HorizontalLayout {
+            padding_left: R3xMetrics.space_sm;
+            padding_right: R3xMetrics.space_sm;
+            padding_top: R3xMetrics.space_xs;
+            padding_bottom: R3xMetrics.space_xs;
+
+            MaterialText {
+                text: root.text;
+                style: R3xTypography.label_medium;
+                color: root.fg;
+                vertical_alignment: center;
+            }
+        }
+    }
+}

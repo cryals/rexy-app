@@ -1,0 +1,50 @@
+import { TextStyle } from "../../material-1.1.0/ui/styling/material_typography.slint";
+
+export global R3xTypography {
+    out property <string> font_sans: "Roboto";
+    out property <string> font_expressive: "Roboto Flex";
+    out property <string> font_mono: "Roboto Mono";
+
+    out property <TextStyle> display_lg: { font_size: 57px, font_weight: 500 };
+    out property <TextStyle> display_lg_mobile: { font_size: 32px, font_weight: 500 };
+    out property <TextStyle> display_md: { font_size: 45px, font_weight: 500 };
+    out property <TextStyle> display_md_mobile: { font_size: 30px, font_weight: 500 };
+    out property <TextStyle> display_sm: { font_size: 36px, font_weight: 500 };
+    out property <TextStyle> display_sm_mobile: { font_size: 28px, font_weight: 500 };
+
+    out property <TextStyle> headline_lg: { font_size: 32px, font_weight: 500 };
+    out property <TextStyle> headline_md: { font_size: 28px, font_weight: 500 };
+    out property <TextStyle> headline_sm: { font_size: 24px, font_weight: 500 };
+
+    out property <TextStyle> title_lg: { font_size: 22px, font_weight: 500 };
+    out property <TextStyle> title_md: { font_size: 16px, font_weight: 500 };
+    out property <TextStyle> title_sm: { font_size: 14px, font_weight: 500 };
+
+    out property <TextStyle> body_lg: { font_size: 16px, font_weight: 400 };
+    out property <TextStyle> body_md: { font_size: 14px, font_weight: 400 };
+    out property <TextStyle> body_sm: { font_size: 12px, font_weight: 400 };
+
+    out property <TextStyle> label_lg: { font_size: 14px, font_weight: 500 };
+    out property <TextStyle> label_md: { font_size: 12px, font_weight: 500 };
+    out property <TextStyle> label_sm: { font_size: 11px, font_weight: 500 };
+
+    // MaterialTypography naming aliases
+    out property <TextStyle> display_large: root.display_lg;
+    out property <TextStyle> display_medium: root.display_md;
+    out property <TextStyle> display_small: root.display_sm;
+    out property <TextStyle> headline_large: root.headline_lg;
+    out property <TextStyle> headline_medium: root.headline_md;
+    out property <TextStyle> headline_small: root.headline_sm;
+    out property <TextStyle> title_large: root.title_lg;
+    out property <TextStyle> title_medium: root.title_md;
+    out property <TextStyle> title_small: root.title_sm;
+    out property <TextStyle> body_large: root.body_lg;
+    out property <TextStyle> body_medium: root.body_md;
+    out property <TextStyle> body_small: root.body_sm;
+    out property <TextStyle> label_large: root.label_lg;
+    out property <TextStyle> label_medium: root.label_md;
+    out property <TextStyle> label_small: root.label_sm;
+
+    out property <TextStyle> mono_md: { font_size: 13px, font_weight: 400 };
+    out property <TextStyle> mono_sm: { font_size: 12px, font_weight: 400 };
+}
