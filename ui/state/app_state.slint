@@ -1,21 +1,138 @@
 import { HeroState } from "../components/connection_hero_button.slint";
 import { SegmentedModeItem } from "../components/connected_button_group.slint";
 
+export struct SubscriptionRow {
+    id: string,
+    name: string,
+    url_masked: string,
+    profile_count: int,
+    used_text: string,
+    total_text: string,
+    usage_ratio: float,
+    is_unlimited: bool,
+    expires_text: string,
+    last_updated: string,
+    auto_update: bool,
+    status_text: string,
+    is_error: bool,
+}
+
+export struct ProfileRow {
+    id: string,
+    name: string,
+    protocol: string,
+    transport: string,
+    security_label: string,
+    server_display: string,
+    country_code: string,
+    latency_text: string,
+    latency_ms: int,
+    is_favorite: bool,
+    is_selected: bool,
+    core_hint: string,
+    subscription_id: string,
+}
+
+export struct RoutingRuleRow {
+    id: string,
+    name: string,
+    group: string,
+    matcher_summary: string,
+    action_label: string,
+    priority: int,
+    enabled: bool,
+}
+
+export struct RuleSetRow {
+    id: string,
+    tag: string,
+    kind: string,
+    entry_count: int,
+    enabled: bool,
+}
+
+export struct ConnectionRow {
+    id: string,
+    target: string,
+    protocol: string,
+    rule: string,
+    core_name: string,
+    down_text: string,
+    up_text: string,
+    duration_text: string,
+}
+
+export struct DiagnosticRow {
+    id: string,
+    title: string,
+    status_key: string,
+    status_label: string,
+    summary: string,
+    technical_details: string,
+    suggested_action: string,
+    duration_text: string,
+}
+
+export struct LogRow {
+    timestamp: string,
+    category: string,
+    level: string,
+    source: string,
+    message: string,
+}
+
+export struct CoreRow {
+    id: string,
+    name: string,
+    version: string,
+    license: string,
+    install_status: string,
+    is_installed: bool,
+    is_preferred: bool,
+    platforms_text: string,
+    protocols_count: int,
+    binary_path: string,
+    limitations: string,
+}
+
 export global R3xAppState {
     // Navigation: 0=Home, 1=Subscriptions, 2=Servers, 3=Routing, 4=Connections, 5=Diagnostics, 6=CoreManager, 7=Settings
     in-out property <int> current_nav: 0;
     in-out property <bool> drawer_collapsed: false;
-    in-out property <string> app_version: "v0.1";
+    in-out property <string> app_version: "v0.1.0";
+
+    // Onboarding
+    in-out property <bool> show_onboarding: false;
+    in-out property <int> onboarding_step: 0;
+
+    // Active modal identifier: "", "quick_settings", "add_subscription", "import_uri", "manual_profile", "add_rule", "backup_restore", "report_preview", "about"
+    in-out property <string> active_modal: "";
+
+    // Modal form fields
+    in-out property <string> form_sub_name: "";
+    in-out property <string> form_sub_url: "";
+    in-out property <string> form_import_text: "";
+    in-out property <string> form_profile_name: "";
+    in-out property <int> form_profile_proto_idx: 0;
+    in-out property <string> form_profile_host: "";
+    in-out property <string> form_profile_port: "443";
+    in-out property <string> form_profile_secret: "";
+    in-out property <string> form_profile_sni: "";
+    in-out property <string> form_rule_name: "";
+    in-out property <int> form_rule_type_idx: 0;
+    in-out property <string> form_rule_value: "";
+    in-out property <int> form_rule_action_idx: 0;
 
     // Localization: 0=English, 1=Russian
     in-out property <int> language_index: 0;
     out property <bool> is_ru: root.language_index == 1;
 
-    // Theme: 0=System, 1=Light, 2=Dark, 3=AMOLED
+    // Theme & Appearance
     in-out property <int> theme_mode_index: 2;
     in-out property <bool> reduced_motion: false;
     in-out property <bool> dynamic_color: false;
     in-out property <bool> interface_advanced: true;
+    in-out property <string> custom_accent_hex: "#CAC3DC";
 
     // Connection state
     in-out property <HeroState> hero_state: HeroState.disconnected;
@@ -28,10 +145,14 @@ export global R3xAppState {
 
     // Selected server summary
     in-out property <bool> has_selected_server: false;
+    in-out property <string> selected_profile_id: "";
     in-out property <string> server_name: "No server selected";
     in-out property <string> server_subtitle: "Import configuration or subscription";
     in-out property <string> server_flag_code: "xx";
     in-out property <string> server_latency: "—";
+    in-out property <string> selected_server_protocol: "—";
+    in-out property <string> selected_server_transport: "—";
+    in-out property <string> selected_server_security: "—";
 
     // Connection modes
     in-out property <int> connection_mode_index: 0;
@@ -55,22 +176,95 @@ export global R3xAppState {
 
     // Lower telemetry / core / IP cards
     in-out property <string> external_ip: "Not checked";
-    in-out property <string> external_ip_location: "Connect or refresh to check";
+    in-out property <string> external_ip_location: "Check requires network probe";
     in-out property <string> active_core_name: "Core adapters";
     in-out property <string> active_core_subtitle: "Standby · Ready";
     in-out property <string> active_core_badge: "Standby";
     in-out property <string> active_sockets_value: "0 sockets";
     in-out property <string> active_sockets_detail: "No active tunnel";
 
-    // Database counts
+    // Subscriptions & Servers
+    in-out property <[SubscriptionRow]> subscriptions: [];
+    in-out property <string> selected_subscription_id: "";
+    in-out property <[ProfileRow]> profiles: [];
+    in-out property <string> server_search_query: "";
+    in-out property <bool> server_filter_favorites: false;
+    in-out property <string> exported_uri_preview: "";
+
+    // Routing & DNS
+    in-out property <[RoutingRuleRow]> routing_rules: [];
+    in-out property <[RuleSetRow]> rule_sets: [];
+    in-out property <int> routing_subtab: 0;
+    in-out property <int> dns_mode_index: 2;
+    in-out property <string> dns_primary_address: "https://1.1.1.1/dns-query";
+    in-out property <string> dns_fallback_address: "tls://9.9.9.9";
+    in-out property <bool> dns_ipv6: false;
+    in-out property <int> dns_leak_mode_index: 1;
+    in-out property <string> dns_test_status: "Not probed";
+    in-out property <int> raw_config_core_index: 0;
+    in-out property <string> raw_config_preview: "// Select a server profile to generate raw core configuration preview.";
+
+    // Connections
+    in-out property <[ConnectionRow]> active_connections: [];
+    in-out property <[ConnectionRow]> connection_history: [];
+    in-out property <int> connections_subtab: 0;
+    in-out property <string> connections_search: "";
+
+    // Diagnostics & Monitoring & Logs
+    in-out property <int> diagnostics_tab: 0;
+    in-out property <int> monitoring_range_index: 0;
+    in-out property <bool> monitoring_paused: false;
+    in-out property <string> ui_ram_text: "N/A";
+    in-out property <string> ui_cpu_text: "N/A";
+    in-out property <string> core_ram_text: "N/A";
+    in-out property <string> core_cpu_text: "N/A";
+    in-out property <[DiagnosticRow]> diagnostic_checks: [];
+    in-out property <bool> doctor_running: false;
+    in-out property <string> doctor_summary: "Run all 16 real system & network checks";
+    in-out property <string> doctor_report_text: "";
+    in-out property <[LogRow]> log_lines: [];
+    in-out property <string> log_search: "";
+    in-out property <int> log_level_filter: 0;
+
+    // Core Manager
+    in-out property <[CoreRow]> cores: [];
+    in-out property <string> selected_core_id: "xray";
+    in-out property <string> global_core_pref_label: "Auto (Smart Core Selector)";
+
+    // Settings
+    in-out property <int> settings_category: 0;
+    in-out property <int> performance_profile_index: 1;
+    in-out property <string> mixed_port_text: "10808";
+    in-out property <string> socks_port_text: "10809";
+    in-out property <string> http_port_text: "10810";
+    in-out property <bool> allow_lan: false;
+    in-out property <bool> ipv6_enabled: false;
+    in-out property <bool> auto_reconnect: true;
+    in-out property <bool> kill_switch: false;
+    in-out property <bool> minimize_to_tray: true;
+    in-out property <bool> auto_start_on_boot: false;
+    in-out property <bool> connect_on_launch: false;
+    in-out property <string> secret_store_status: "Checking...";
+    in-out property <string> backup_passphrase_text: "";
+    in-out property <string> backup_path_text: "";
+    in-out property <string> backup_status_text: "";
+
+    // Counts & snackbar
     in-out property <int> subscription_count: 0;
     in-out property <int> profile_count: 0;
     in-out property <int> routing_rule_count: 0;
     in-out property <int> log_entry_count: 0;
     in-out property <string> snackbar_message: "";
 
-    // Callbacks handled by Rust controller
+    // Navigation & global actions
     callback nav_selected(index: int);
+    callback complete_onboarding();
+    callback skip_onboarding();
+    callback open_modal(modal_id: string);
+    callback close_modal();
+    callback dismiss_snackbar();
+
+    // Home & connection actions
     callback hero_action_clicked();
     callback mode_selected(index: int, id: string);
     callback open_server_selector();
@@ -79,8 +273,60 @@ export global R3xAppState {
     callback copy_ip_clicked();
     callback refresh_ip_clicked();
     callback open_diagnostics_clicked();
+
+    // Subscriptions & profiles
+    callback submit_add_subscription(name: string, url: string);
+    callback submit_import_uri(raw: string);
+    callback submit_manual_profile(name: string, proto_idx: int, host: string, port: string, secret: string, sni: string);
+    callback refresh_subscription(id: string);
+    callback refresh_all_subscriptions();
+    callback delete_subscription(id: string);
+    callback select_subscription(id: string);
+    callback select_profile(id: string);
+    callback toggle_favorite_profile(id: string);
+    callback delete_profile(id: string);
+    callback test_all_latencies();
+    callback export_profile_uri(id: string);
+    callback set_server_filter(query: string, favorites_only: bool);
+
+    // Routing & DNS
+    callback submit_add_rule(name: string, type_idx: int, value: string, action_idx: int);
+    callback toggle_routing_rule(id: string, enabled: bool);
+    callback delete_routing_rule(id: string);
+    callback add_preset_rules();
+    callback save_dns_config();
+    callback test_dns_clicked();
+    callback refresh_raw_config(core_idx: int);
+
+    // Connections
+    callback clear_connection_history();
+
+    // Diagnostics & Monitoring & Logs
+    callback set_monitoring_range(idx: int);
+    callback toggle_monitoring_pause();
+    callback run_network_doctor();
+    callback export_doctor_report();
+    callback refresh_logs();
+    callback clear_logs();
+    callback export_logs();
+
+    // Core Manager
+    callback select_core(id: string);
+    callback set_preferred_core(id: string);
+    callback reset_core_auto();
+    callback verify_cores_clicked();
+
+    // Settings & Data
     callback theme_selected(index: int);
     callback language_selected(index: int);
     callback reduced_motion_toggled(enabled: bool);
     callback interface_mode_toggled(advanced: bool);
+    callback apply_custom_accent(hex: string);
+    callback performance_profile_selected(idx: int);
+    callback save_network_ports(mixed: string, socks: string, http: string);
+    callback toggle_setting(key: string, enabled: bool);
+    callback recover_network_clicked();
+    callback rerun_onboarding();
+    callback submit_backup_export(passphrase: string);
+    callback submit_backup_restore(path: string, passphrase: string);
 }

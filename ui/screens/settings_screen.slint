@@ -1,0 +1,442 @@
+import { FilledButton, MaterialText, OutlineButton, StateLayerArea } from "@material";
+import { R3xPalette } from "../tokens/palette.slint";
+import { R3xMetrics } from "../tokens/metrics.slint";
+import { R3xTypography } from "../tokens/typography.slint";
+import { R3xIcons } from "../tokens/icons.slint";
+import { R3xAppState } from "../state/app_state.slint";
+import { ExpressiveCard, SurfaceTier } from "../components/expressive_card.slint";
+import { ConnectedSegmentedGroup } from "../components/connected_button_group.slint";
+import { StackedListItem, StackPosition } from "../components/stacked_list.slint";
+import { StatusPill, StatusTone } from "../components/status_badge.slint";
+import { R3xFilterChip, R3xKeyValueRow, R3xSwitchRow, R3xTextField } from "../components/input_fields.slint";
+
+component CategoryItem {
+    in property <string> label;
+    in property <image> icon;
+    in property <bool> selected;
+    callback clicked();
+
+    min_height: 44px;
+    Rectangle {
+        background: root.selected ? R3xPalette.secondary_container : transparent;
+        border_radius: R3xMetrics.radius_full;
+        clip: true;
+
+        StateLayerArea {
+            width: 100%;
+            height: 100%;
+            color: R3xPalette.on_surface;
+
+            HorizontalLayout {
+                padding_left: R3xMetrics.space_md;
+                padding_right: R3xMetrics.space_md;
+                spacing: R3xMetrics.space_sm;
+
+                VerticalLayout {
+                    alignment: center;
+                    Image {
+                        width: 18px;
+                        height: 18px;
+                        source: root.icon;
+                        colorize: root.selected ? R3xPalette.on_secondary_container : R3xPalette.on_surface_variant;
+                    }
+                }
+                MaterialText {
+                    text: root.label;
+                    style: R3xTypography.label_large;
+                    color: root.selected ? R3xPalette.on_secondary_container : R3xPalette.on_surface_variant;
+                    vertical_alignment: center;
+                }
+            }
+            clicked => { root.clicked(); }
+        }
+    }
+}
+
+component ThemeSwatchCard {
+    in property <string> label;
+    in property <image> icon;
+    in property <color> preview_bg;
+    in property <bool> selected;
+
+    callback clicked();
+
+    horizontal_stretch: 1;
+    accessible-role: button;
+    accessible-label: root.label;
+    accessible-checkable: true;
+    accessible-checked: root.selected;
+
+    Rectangle {
+        background: root.selected ? R3xPalette.primary_container : R3xPalette.surface_container_low;
+        border_radius: R3xMetrics.radius_xl;
+        border_width: root.selected ? 0px : 1px;
+        border_color: R3xPalette.outline_variant;
+        clip: true;
+
+        StateLayerArea {
+            width: 100%;
+            height: 100%;
+            color: root.selected ? R3xPalette.on_primary_container : R3xPalette.on_surface;
+
+            VerticalLayout {
+                padding: R3xMetrics.space_md;
+                spacing: R3xMetrics.space_sm;
+
+                Rectangle {
+                    height: 44px;
+                    border_radius: R3xMetrics.radius_inner;
+                    background: root.preview_bg;
+                    border_width: 1px;
+                    border_color: R3xPalette.outline_variant;
+
+                    Image {
+                        width: 20px;
+                        height: 20px;
+                        x: (parent.width - self.width) / 2;
+                        y: (parent.height - self.height) / 2;
+                        source: root.icon;
+                        colorize: root.label == "Light" ? #1C1B1F : #E3E2E7;
+                    }
+                }
+
+                MaterialText {
+                    text: root.label;
+                    style: R3xTypography.label_large;
+                    color: root.selected ? R3xPalette.on_primary_container : R3xPalette.on_surface;
+                    horizontal_alignment: center;
+                }
+            }
+
+            clicked => { root.clicked(); }
+        }
+    }
+}
+
+export component SettingsScreen {
+    in property <bool> is_desktop: true;
+
+    VerticalLayout {
+        spacing: R3xMetrics.space_lg;
+
+        MaterialText {
+            text: R3xAppState.is_ru ? "Настройки" : "Settings";
+            style: R3xTypography.headline_md;
+            color: R3xPalette.on_surface;
+        }
+
+        // Mobile Category Chip Strip (all 8 settings categories)
+        if !root.is_desktop : HorizontalLayout {
+            spacing: R3xMetrics.space_xs;
+            R3xFilterChip { label: R3xAppState.is_ru ? "Вид" : "Theme"; selected: R3xAppState.settings_category == 0; clicked => { R3xAppState.settings_category = 0; } }
+            R3xFilterChip { label: R3xAppState.is_ru ? "Сеть" : "Network"; selected: R3xAppState.settings_category == 1; clicked => { R3xAppState.settings_category = 1; } }
+            R3xFilterChip { label: R3xAppState.is_ru ? "Приватн." : "Privacy"; selected: R3xAppState.settings_category == 2; clicked => { R3xAppState.settings_category = 2; } }
+            R3xFilterChip { label: R3xAppState.is_ru ? "Батарея" : "Battery"; selected: R3xAppState.settings_category == 3; clicked => { R3xAppState.settings_category = 3; } }
+            R3xFilterChip { label: R3xAppState.is_ru ? "Бэкап" : "Backup"; selected: R3xAppState.settings_category == 4; clicked => { R3xAppState.settings_category = 4; } }
+            R3xFilterChip { label: R3xAppState.is_ru ? "Трей" : "Startup"; selected: R3xAppState.settings_category == 5; clicked => { R3xAppState.settings_category = 5; } }
+            R3xFilterChip { label: R3xAppState.is_ru ? "Сброс" : "Recovery"; selected: R3xAppState.settings_category == 6; clicked => { R3xAppState.settings_category = 6; } }
+            R3xFilterChip { label: R3xAppState.is_ru ? "О R3X" : "About"; selected: R3xAppState.settings_category == 7; clicked => { R3xAppState.settings_category = 7; } }
+        }
+
+        HorizontalLayout {
+            spacing: R3xMetrics.space_lg;
+
+            // Desktop Split-Pane Category Rail
+            if root.is_desktop : ExpressiveCard {
+                width: 240px;
+                tier: SurfaceTier.low;
+                corner_radius: R3xMetrics.radius_hero;
+                content_padding: R3xMetrics.space_md;
+
+                VerticalLayout {
+                    spacing: R3xMetrics.space_xs;
+                    CategoryItem { label: R3xAppState.is_ru ? "Внешний вид" : "Appearance"; icon: R3xIcons.palette; selected: R3xAppState.settings_category == 0; clicked => { R3xAppState.settings_category = 0; } }
+                    CategoryItem { label: R3xAppState.is_ru ? "Сеть и порты" : "Connection & Network"; icon: R3xIcons.tune; selected: R3xAppState.settings_category == 1; clicked => { R3xAppState.settings_category = 1; } }
+                    CategoryItem { label: R3xAppState.is_ru ? "Приватность и ключи" : "Privacy & Security"; icon: R3xIcons.shield; selected: R3xAppState.settings_category == 2; clicked => { R3xAppState.settings_category = 2; } }
+                    CategoryItem { label: R3xAppState.is_ru ? "Производительность" : "Performance & Battery"; icon: R3xIcons.battery_saver; selected: R3xAppState.settings_category == 3; clicked => { R3xAppState.settings_category = 3; } }
+                    CategoryItem { label: R3xAppState.is_ru ? "Резервные копии" : "Data & Backup"; icon: R3xIcons.backup; selected: R3xAppState.settings_category == 4; clicked => { R3xAppState.settings_category = 4; } }
+                    CategoryItem { label: R3xAppState.is_ru ? "Уведомления" : "Notifications"; icon: R3xIcons.info; selected: R3xAppState.settings_category == 5; clicked => { R3xAppState.settings_category = 5; } }
+                    CategoryItem { label: R3xAppState.is_ru ? "Дополнительно" : "Advanced Recovery"; icon: R3xIcons.terminal; selected: R3xAppState.settings_category == 6; clicked => { R3xAppState.settings_category = 6; } }
+                    CategoryItem { label: R3xAppState.is_ru ? "О R3X и лицензии" : "About & Licenses"; icon: R3xIcons.verified_user; selected: R3xAppState.settings_category == 7; clicked => { R3xAppState.settings_category = 7; } }
+                }
+            }
+
+            // Active Settings Detail Panel
+            VerticalLayout {
+                horizontal_stretch: 1;
+                spacing: R3xMetrics.space_md;
+
+                // 0: Appearance
+                if R3xAppState.settings_category == 0 : ExpressiveCard {
+                    tier: SurfaceTier.standard;
+                    corner_radius: R3xMetrics.radius_hero;
+                    content_padding: R3xMetrics.space_xl;
+
+                    VerticalLayout {
+                        spacing: R3xMetrics.space_lg;
+
+                        MaterialText {
+                            text: R3xAppState.is_ru ? "Внешний вид и палитра" : "Appearance & Material 3 Expressive";
+                            style: R3xTypography.title_large;
+                            color: R3xPalette.on_surface;
+                        }
+
+                        HorizontalLayout {
+                            spacing: R3xMetrics.space_md;
+                            ThemeSwatchCard { label: R3xAppState.is_ru ? "Система" : "System"; icon: R3xIcons.brightness_auto; preview_bg: R3xPalette.surface_container_highest; selected: R3xAppState.theme_mode_index == 0; clicked => { R3xAppState.theme_selected(0); } }
+                            ThemeSwatchCard { label: "Light"; icon: R3xIcons.light_mode; preview_bg: #FCF8FD; selected: R3xAppState.theme_mode_index == 1; clicked => { R3xAppState.theme_selected(1); } }
+                            ThemeSwatchCard { label: "Dark"; icon: R3xIcons.dark_mode; preview_bg: #141317; selected: R3xAppState.theme_mode_index == 2; clicked => { R3xAppState.theme_selected(2); } }
+                            ThemeSwatchCard { label: "AMOLED"; icon: R3xIcons.contrast; preview_bg: #000000; selected: R3xAppState.theme_mode_index == 3; clicked => { R3xAppState.theme_selected(3); } }
+                        }
+
+                        HorizontalLayout {
+                            spacing: R3xMetrics.space_md;
+                            R3xTextField {
+                                horizontal_stretch: 1;
+                                label: R3xAppState.is_ru ? "Пользовательский акцент (#RRGGBB)" : "Custom Accent Hex (#RRGGBB)";
+                                monospace: true;
+                                text <=> R3xAppState.custom_accent_hex;
+                            }
+                            VerticalLayout {
+                                alignment: end;
+                                OutlineButton {
+                                    text: R3xAppState.is_ru ? "Применить" : "Apply Accent";
+                                    clicked => { R3xAppState.apply_custom_accent(R3xAppState.custom_accent_hex); }
+                                }
+                            }
+                        }
+
+                        VerticalLayout {
+                            spacing: R3xMetrics.space_xs;
+                            StackedListItem {
+                                position: StackPosition.first;
+                                clickable: false;
+                                outer_radius: R3xMetrics.radius_xl;
+                                HorizontalLayout {
+                                    horizontal_stretch: 1;
+                                    alignment: space_between;
+                                    MaterialText { text: R3xAppState.is_ru ? "Язык интерфейса" : "Interface language"; style: R3xTypography.body_large; color: R3xPalette.on_surface; vertical_alignment: center; }
+                                    ConnectedSegmentedGroup {
+                                        width: 200px;
+                                        items: [
+                                            { id: "en", label: "English", enabled: true, disabled_reason: "" },
+                                            { id: "ru", label: "Русский", enabled: true, disabled_reason: "" },
+                                        ];
+                                        current_index <=> R3xAppState.language_index;
+                                        selected(idx, _id) => { R3xAppState.language_selected(idx); }
+                                    }
+                                }
+                            }
+                            R3xSwitchRow {
+                                position: StackPosition.middle;
+                                title: R3xAppState.is_ru ? "Расширенный режим" : "Advanced interface mode";
+                                subtitle: R3xAppState.is_ru ? "Показывать маршрутизацию, ядра и диагностику" : "Expose routing rules, raw configs, and core selector";
+                                checked: R3xAppState.interface_advanced;
+                                toggled(v) => { R3xAppState.interface_mode_toggled(v); }
+                            }
+                            R3xSwitchRow {
+                                position: StackPosition.last;
+                                title: R3xAppState.is_ru ? "Уменьшение анимаций" : "Reduced motion";
+                                subtitle: R3xAppState.is_ru ? "Отключить морфинг и второстепенные переходы" : "Disable shape-morphing and non-essential transitions";
+                                checked: R3xAppState.reduced_motion;
+                                toggled(v) => { R3xAppState.reduced_motion_toggled(v); }
+                            }
+                        }
+                    }
+                }
+
+                // 1: Connection & Network
+                if R3xAppState.settings_category == 1 : ExpressiveCard {
+                    tier: SurfaceTier.standard;
+                    corner_radius: R3xMetrics.radius_hero;
+                    content_padding: R3xMetrics.space_xl;
+
+                    VerticalLayout {
+                        spacing: R3xMetrics.space_md;
+                        MaterialText { text: R3xAppState.is_ru ? "Сеть и локальные порты" : "Connection & Local Ports"; style: R3xTypography.title_large; color: R3xPalette.on_surface; }
+
+                        HorizontalLayout {
+                            spacing: R3xMetrics.space_md;
+                            R3xTextField { horizontal_stretch: 1; label: "Mixed Port"; monospace: true; text <=> R3xAppState.mixed_port_text; }
+                            R3xTextField { horizontal_stretch: 1; label: "SOCKS Port"; monospace: true; text <=> R3xAppState.socks_port_text; }
+                            R3xTextField { horizontal_stretch: 1; label: "HTTP Port"; monospace: true; text <=> R3xAppState.http_port_text; }
+                        }
+
+                        HorizontalLayout {
+                            alignment: end;
+                            FilledButton {
+                                text: R3xAppState.is_ru ? "Сохранить порты" : "Save port settings";
+                                icon: R3xIcons.check;
+                                clicked => { R3xAppState.save_network_ports(R3xAppState.mixed_port_text, R3xAppState.socks_port_text, R3xAppState.http_port_text); }
+                            }
+                        }
+
+                        VerticalLayout {
+                            spacing: R3xMetrics.space_xs;
+                            R3xSwitchRow { position: StackPosition.first; title: "Auto-reconnect"; subtitle: "Automatically recover dropped tunnel sessions"; checked: R3xAppState.auto_reconnect; toggled(v) => { R3xAppState.toggle_setting("auto_reconnect", v); } }
+                            R3xSwitchRow { position: StackPosition.middle; title: "Allow LAN sharing"; subtitle: "Bind local proxy listeners to 0.0.0.0"; checked: R3xAppState.allow_lan; toggled(v) => { R3xAppState.toggle_setting("allow_lan", v); } }
+                            R3xSwitchRow { position: StackPosition.last; title: "Enable IPv6 routing"; subtitle: "Route IPv6 traffic through compatible cores"; checked: R3xAppState.ipv6_enabled; toggled(v) => { R3xAppState.toggle_setting("ipv6_enabled", v); } }
+                        }
+                    }
+                }
+
+                // 2: Privacy & Security
+                if R3xAppState.settings_category == 2 : ExpressiveCard {
+                    tier: SurfaceTier.standard;
+                    corner_radius: R3xMetrics.radius_hero;
+                    content_padding: R3xMetrics.space_xl;
+
+                    VerticalLayout {
+                        spacing: R3xMetrics.space_md;
+                        MaterialText { text: R3xAppState.is_ru ? "Приватность и хранилище секретов" : "Privacy & Secret Security"; style: R3xTypography.title_large; color: R3xPalette.on_surface; }
+
+                        R3xKeyValueRow { label: "OS Secret Store"; value: R3xAppState.secret_store_status; }
+                        R3xKeyValueRow { label: "Log Redaction"; value: "Active (UUID, tokens, PSKs stripped)"; }
+                        R3xKeyValueRow { label: "Telemetry / Analytics"; value: "None (0 outbound tracking endpoints)"; }
+
+                        R3xSwitchRow {
+                            position: StackPosition.only;
+                            title: "Kill Switch Guard";
+                            subtitle: "Persist active firewall/recovery intent during tunnel outages";
+                            checked: R3xAppState.kill_switch;
+                            toggled(v) => { R3xAppState.toggle_setting("kill_switch", v); }
+                        }
+                    }
+                }
+
+                // 3: Performance & Battery
+                if R3xAppState.settings_category == 3 : ExpressiveCard {
+                    tier: SurfaceTier.standard;
+                    corner_radius: R3xMetrics.radius_hero;
+                    content_padding: R3xMetrics.space_xl;
+
+                    VerticalLayout {
+                        spacing: R3xMetrics.space_lg;
+                        MaterialText { text: R3xAppState.is_ru ? "Производительность и батарея" : "Performance & Battery Profile"; style: R3xTypography.title_large; color: R3xPalette.on_surface; }
+                        MaterialText {
+                            text: R3xAppState.is_ru ? "Определяет частоту опроса телеметрии (Eco 2000ms · Balanced 1000ms · Performance 400ms)." : "Controls live telemetry polling cadence (Eco 2000ms · Balanced 1000ms · Performance 400ms).";
+                            style: R3xTypography.body_md;
+                            color: R3xPalette.on_surface_variant;
+                            wrap: word_wrap;
+                        }
+                        ConnectedSegmentedGroup {
+                            items: [
+                                { id: "eco", label: "Eco (2s)", enabled: true, disabled_reason: "" },
+                                { id: "balanced", label: "Balanced (1s)", enabled: true, disabled_reason: "" },
+                                { id: "perf", label: "Performance (400ms)", enabled: true, disabled_reason: "" },
+                            ];
+                            current_index <=> R3xAppState.performance_profile_index;
+                            selected(idx, _id) => { R3xAppState.performance_profile_selected(idx); }
+                        }
+                    }
+                }
+
+                // 4: Data & Encrypted Backup
+                if R3xAppState.settings_category == 4 : ExpressiveCard {
+                    tier: SurfaceTier.standard;
+                    corner_radius: R3xMetrics.radius_hero;
+                    content_padding: R3xMetrics.space_xl;
+
+                    VerticalLayout {
+                        spacing: R3xMetrics.space_md;
+                        MaterialText { text: R3xAppState.is_ru ? "Зашифрованное резервное копирование" : "Encrypted Data Backup & Restore"; style: R3xTypography.title_large; color: R3xPalette.on_surface; }
+                        MaterialText {
+                            text: "Uses Argon2id KDF + XChaCha20-Poly1305 AEAD (.r3xbak).";
+                            style: R3xTypography.body_md;
+                            color: R3xPalette.on_surface_variant;
+                        }
+
+                        R3xTextField { label: "Passphrase"; placeholder: "Minimum 8 characters"; is_password: true; text <=> R3xAppState.backup_passphrase_text; }
+                        R3xTextField { label: "Backup File Path (for Restore)"; placeholder: "Leave empty to export new timestamped backup"; monospace: true; text <=> R3xAppState.backup_path_text; }
+
+                        HorizontalLayout {
+                            spacing: R3xMetrics.space_sm;
+                            FilledButton {
+                                text: R3xAppState.is_ru ? "Экспорт .r3xbak" : "Export Encrypted Backup";
+                                icon: R3xIcons.backup;
+                                clicked => { R3xAppState.submit_backup_export(R3xAppState.backup_passphrase_text); }
+                            }
+                            OutlineButton {
+                                text: R3xAppState.is_ru ? "Восстановить" : "Restore Backup";
+                                icon: R3xIcons.refresh;
+                                clicked => { R3xAppState.submit_backup_restore(R3xAppState.backup_path_text, R3xAppState.backup_passphrase_text); }
+                            }
+                        }
+
+                        if R3xAppState.backup_status_text != "" : StatusPill {
+                            label: R3xAppState.backup_status_text;
+                            tone: StatusTone.primary;
+                        }
+                    }
+                }
+
+                // 5: Notifications & Desktop Behavior
+                if R3xAppState.settings_category == 5 : ExpressiveCard {
+                    tier: SurfaceTier.standard;
+                    corner_radius: R3xMetrics.radius_hero;
+                    content_padding: R3xMetrics.space_xl;
+
+                    VerticalLayout {
+                        spacing: R3xMetrics.space_xs;
+                        R3xSwitchRow { position: StackPosition.first; title: "Minimize to system tray on close"; subtitle: "Keep R3X running in background tray where supported"; checked: R3xAppState.minimize_to_tray; toggled(v) => { R3xAppState.toggle_setting("minimize_to_tray", v); } }
+                        R3xSwitchRow { position: StackPosition.middle; title: "Auto-start on OS login"; subtitle: "Register startup launch preference"; checked: R3xAppState.auto_start_on_boot; toggled(v) => { R3xAppState.toggle_setting("auto_start_on_boot", v); } }
+                        R3xSwitchRow { position: StackPosition.last; title: "Connect last server on launch"; subtitle: "Automatically establish tunnel when R3X opens"; checked: R3xAppState.connect_on_launch; toggled(v) => { R3xAppState.toggle_setting("connect_on_launch", v); } }
+                    }
+                }
+
+                // 6: Advanced Recovery
+                if R3xAppState.settings_category == 6 : ExpressiveCard {
+                    tier: SurfaceTier.standard;
+                    corner_radius: R3xMetrics.radius_hero;
+                    content_padding: R3xMetrics.space_xl;
+
+                    VerticalLayout {
+                        spacing: R3xMetrics.space_md;
+                        MaterialText { text: R3xAppState.is_ru ? "Восстановление сети и отладка" : "Advanced Network Recovery"; style: R3xTypography.title_large; color: R3xPalette.on_surface; }
+                        MaterialText {
+                            text: R3xAppState.is_ru
+                                ? "Сбрасывает оставшиеся настройки системного прокси или kill-switch после аварийного завершения."
+                                : "Restores pre-session System Proxy snapshot and clears persisted kill-switch state.";
+                            style: R3xTypography.body_md;
+                            color: R3xPalette.on_surface_variant;
+                            wrap: word_wrap;
+                        }
+
+                        HorizontalLayout {
+                            spacing: R3xMetrics.space_sm;
+                            FilledButton {
+                                text: R3xAppState.is_ru ? "Восстановить состояние сети" : "Recover Network State";
+                                icon: R3xIcons.shield;
+                                clicked => { R3xAppState.recover_network_clicked(); }
+                            }
+                            OutlineButton {
+                                text: R3xAppState.is_ru ? "Мастер настройки" : "Re-run Onboarding";
+                                icon: R3xIcons.refresh;
+                                clicked => { R3xAppState.rerun_onboarding(); }
+                            }
+                        }
+                    }
+                }
+
+                // 7: About & Licenses
+                if R3xAppState.settings_category == 7 : ExpressiveCard {
+                    tier: SurfaceTier.standard;
+                    corner_radius: R3xMetrics.radius_hero;
+                    content_padding: R3xMetrics.space_xl;
+
+                    VerticalLayout {
+                        spacing: R3xMetrics.space_sm;
+                        MaterialText { text: "R3X (Rexy) — Rust-powered Expressive Proxy"; style: R3xTypography.title_large; color: R3xPalette.on_surface; }
+                        MaterialText { text: "Many cores. One experience."; style: R3xTypography.title_md; color: R3xPalette.primary; }
+                        R3xKeyValueRow { label: "Application Version"; value: R3xAppState.app_version; monospace: true; }
+                        R3xKeyValueRow { label: "R3X License"; value: "GPL-3.0-only"; }
+                        R3xKeyValueRow { label: "UI Toolkit"; value: "Slint 1.19 + Material 3 Expressive"; }
+                        R3xKeyValueRow { label: "Primary Cores"; value: "Xray (MPL-2.0), sing-box (GPL-3.0), Mihomo (GPL-3.0)"; }
+                        R3xKeyValueRow { label: "External VPNs"; value: "WireGuard, AmneziaWG, OpenVPN (external GPL-2.0 CLI)"; }
+                        R3xKeyValueRow { label: "TLS / Crypto"; value: "rustls (ring), Argon2id, XChaCha20-Poly1305"; }
+                    }
+                }
+            }
+        }
+    }
+}

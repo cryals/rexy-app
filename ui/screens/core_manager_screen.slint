@@ -1,0 +1,139 @@
+import { FilledButton, MaterialText, OutlineButton } from "@material";
+import { R3xPalette } from "../tokens/palette.slint";
+import { R3xMetrics } from "../tokens/metrics.slint";
+import { R3xTypography } from "../tokens/typography.slint";
+import { R3xIcons } from "../tokens/icons.slint";
+import { R3xAppState } from "../state/app_state.slint";
+import { ExpressiveCard, SurfaceTier } from "../components/expressive_card.slint";
+import { StackedListItem, StackPosition } from "../components/stacked_list.slint";
+import { CompactTag, StatusPill, StatusTone } from "../components/status_badge.slint";
+import { R3xKeyValueRow } from "../components/input_fields.slint";
+
+export component CoreManagerScreen {
+    in property <bool> is_desktop: true;
+
+    VerticalLayout {
+        spacing: R3xMetrics.space_lg;
+
+        HorizontalLayout {
+            alignment: space_between;
+            spacing: R3xMetrics.space_md;
+
+            VerticalLayout {
+                spacing: 2px;
+                MaterialText {
+                    text: R3xAppState.is_ru ? "Менеджер сетевых ядер" : "Core Manager";
+                    style: R3xTypography.headline_md;
+                    color: R3xPalette.on_surface;
+                }
+                MaterialText {
+                    text: (R3xAppState.is_ru ? "Режим выбора: " : "Selection policy: ") + R3xAppState.global_core_pref_label;
+                    style: R3xTypography.body_md;
+                    color: R3xPalette.on_surface_variant;
+                }
+            }
+
+            HorizontalLayout {
+                spacing: R3xMetrics.space_sm;
+                OutlineButton {
+                    text: R3xAppState.is_ru ? "Автовыбор (Smart)" : "Reset to Auto";
+                    icon: R3xIcons.brightness_auto;
+                    clicked => { R3xAppState.reset_core_auto(); }
+                }
+                FilledButton {
+                    text: R3xAppState.is_ru ? "Проверить ядра" : "Re-verify installed";
+                    icon: R3xIcons.verified_user;
+                    clicked => { R3xAppState.verify_cores_clicked(); }
+                }
+            }
+        }
+
+        HorizontalLayout {
+            spacing: R3xMetrics.space_lg;
+
+            // Core Inventory List
+            VerticalLayout {
+                horizontal_stretch: 7;
+                spacing: R3xMetrics.space_xs;
+
+                for core[idx] in R3xAppState.cores : StackedListItem {
+                    position: R3xAppState.cores.length == 1 ? StackPosition.only
+                        : idx == 0 ? StackPosition.first
+                        : idx == R3xAppState.cores.length - 1 ? StackPosition.last
+                        : StackPosition.middle;
+                    selected: core.id == R3xAppState.selected_core_id;
+                    clicked => { R3xAppState.select_core(core.id); }
+
+                    HorizontalLayout {
+                        horizontal_stretch: 1;
+                        alignment: space_between;
+                        spacing: R3xMetrics.space_md;
+
+                        VerticalLayout {
+                            horizontal_stretch: 1;
+                            spacing: 2px;
+                            HorizontalLayout {
+                                spacing: R3xMetrics.space_sm;
+                                MaterialText { text: core.name; style: R3xTypography.title_md; color: R3xPalette.on_surface; vertical_alignment: center; }
+                                if core.is_preferred : CompactTag { text: "Preferred"; tone: StatusTone.primary; }
+                            }
+                            MaterialText {
+                                text: "v" + core.version + " · " + core.license + " · " + core.protocols_count + " protocols · " + core.platforms_text;
+                                style: R3xTypography.body_sm;
+                                color: R3xPalette.on_surface_variant;
+                            }
+                        }
+
+                        VerticalLayout {
+                            alignment: center;
+                            StatusPill {
+                                label: core.install_status;
+                                tone: core.is_installed ? StatusTone.success : StatusTone.neutral;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Selected Core Details Pane
+            if root.is_desktop : ExpressiveCard {
+                horizontal_stretch: 5;
+                tier: SurfaceTier.high;
+                corner_radius: R3xMetrics.radius_hero;
+                content_padding: R3xMetrics.space_xl;
+
+                VerticalLayout {
+                    spacing: R3xMetrics.space_md;
+                    for core in R3xAppState.cores : VerticalLayout {
+                        if core.id == R3xAppState.selected_core_id : VerticalLayout {
+                            spacing: R3xMetrics.space_md;
+                            MaterialText { text: core.name; style: R3xTypography.headline_sm; color: R3xPalette.on_surface; }
+                            R3xKeyValueRow { label: "Core ID"; value: core.id; monospace: true; }
+                            R3xKeyValueRow { label: "Manifest Version"; value: core.version; monospace: true; }
+                            R3xKeyValueRow { label: "License"; value: core.license; }
+                            R3xKeyValueRow { label: "Platforms"; value: core.platforms_text; }
+                            R3xKeyValueRow { label: "Install State"; value: core.install_status; }
+                            R3xKeyValueRow { label: "Binary Path"; value: core.binary_path; monospace: true; }
+
+                            MaterialText {
+                                text: core.limitations;
+                                style: R3xTypography.body_sm;
+                                color: R3xPalette.on_surface_variant;
+                                wrap: word_wrap;
+                            }
+
+                            HorizontalLayout {
+                                spacing: R3xMetrics.space_sm;
+                                FilledButton {
+                                    text: R3xAppState.is_ru ? "Предпочитать это ядро" : "Prefer this core";
+                                    icon: R3xIcons.check_circle;
+                                    clicked => { R3xAppState.set_preferred_core(core.id); }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

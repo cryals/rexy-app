@@ -1,0 +1,265 @@
+import { FilledButton, MaterialText, OutlineButton } from "@material";
+import { R3xPalette } from "../tokens/palette.slint";
+import { R3xMetrics } from "../tokens/metrics.slint";
+import { R3xTypography } from "../tokens/typography.slint";
+import { R3xIcons } from "../tokens/icons.slint";
+import { R3xAppState } from "../state/app_state.slint";
+import { ExpressiveCard, SurfaceTier } from "../components/expressive_card.slint";
+import { ConnectedSegmentedGroup } from "../components/connected_button_group.slint";
+import { StackedListItem, StackPosition } from "../components/stacked_list.slint";
+import { StatusPill, StatusTone } from "../components/status_badge.slint";
+import { TrafficAreaChart } from "../components/traffic_chart.slint";
+import { EmptyStateView } from "../components/empty_error_state.slint";
+import { R3xKeyValueRow, R3xTextField } from "../components/input_fields.slint";
+
+export component DiagnosticsScreen {
+    in property <bool> is_desktop: true;
+
+    VerticalLayout {
+        spacing: R3xMetrics.space_lg;
+
+        HorizontalLayout {
+            alignment: space_between;
+            spacing: R3xMetrics.space_md;
+
+            VerticalLayout {
+                spacing: 2px;
+                MaterialText {
+                    text: R3xAppState.is_ru ? "Диагностика и мониторинг" : "Diagnostics & Telemetry";
+                    style: R3xTypography.headline_md;
+                    color: R3xPalette.on_surface;
+                }
+                MaterialText {
+                    text: R3xAppState.is_ru
+                        ? "Мониторинг в реальном времени, 16 проверок Network Doctor и очищенные журналы"
+                        : "Real-time metrics, 16-point Network Doctor, and redacted LogHub streams";
+                    style: R3xTypography.body_md;
+                    color: R3xPalette.on_surface_variant;
+                }
+            }
+
+            if R3xAppState.diagnostics_tab == 1 : HorizontalLayout {
+                spacing: R3xMetrics.space_sm;
+                OutlineButton {
+                    text: R3xAppState.is_ru ? "Отчёт (скрыты секреты)" : "Redacted Report";
+                    icon: R3xIcons.content_copy;
+                    clicked => { R3xAppState.export_doctor_report(); }
+                }
+                FilledButton {
+                    text: R3xAppState.doctor_running
+                        ? (R3xAppState.is_ru ? "Проверка..." : "Running...")
+                        : (R3xAppState.is_ru ? "Запустить 16 проверок" : "Run 16 checks");
+                    icon: R3xIcons.monitoring;
+                    enabled: !R3xAppState.doctor_running;
+                    clicked => { R3xAppState.run_network_doctor(); }
+                }
+            }
+        }
+
+        // 6 Diagnostics Tabs
+        ConnectedSegmentedGroup {
+            items: [
+                { id: "mon", label: R3xAppState.is_ru ? "Мониторинг" : "Monitoring", enabled: true, disabled_reason: "" },
+                { id: "doc", label: "Network Doctor", enabled: true, disabled_reason: "" },
+                { id: "core_log", label: R3xAppState.is_ru ? "Ядра" : "Core Logs", enabled: true, disabled_reason: "" },
+                { id: "sub_log", label: R3xAppState.is_ru ? "Подписки" : "Sub Logs", enabled: true, disabled_reason: "" },
+                { id: "app_log", label: R3xAppState.is_ru ? "Приложение" : "App Logs", enabled: true, disabled_reason: "" },
+                { id: "plat_log", label: R3xAppState.is_ru ? "Платформа" : "Platform", enabled: true, disabled_reason: "" },
+            ];
+            current_index <=> R3xAppState.diagnostics_tab;
+            selected(idx, _id) => {
+                R3xAppState.diagnostics_tab = idx;
+                if idx >= 2 {
+                    R3xAppState.refresh_logs();
+                }
+            }
+        }
+
+        // Tab 0: Real-Time Monitoring
+        if R3xAppState.diagnostics_tab == 0 : VerticalLayout {
+            spacing: R3xMetrics.space_md;
+
+            HorizontalLayout {
+                alignment: space_between;
+                spacing: R3xMetrics.space_md;
+
+                ConnectedSegmentedGroup {
+                    horizontal_stretch: 1;
+                    items: [
+                        { id: "1m", label: "1m", enabled: true, disabled_reason: "" },
+                        { id: "5m", label: "5m", enabled: true, disabled_reason: "" },
+                        { id: "15m", label: "15m", enabled: true, disabled_reason: "" },
+                        { id: "1h", label: "1h", enabled: true, disabled_reason: "" },
+                    ];
+                    current_index <=> R3xAppState.monitoring_range_index;
+                    selected(idx, _id) => { R3xAppState.set_monitoring_range(idx); }
+                }
+
+                OutlineButton {
+                    text: R3xAppState.monitoring_paused
+                        ? (R3xAppState.is_ru ? "Возобновить" : "Resume")
+                        : (R3xAppState.is_ru ? "Пауза" : "Pause");
+                    icon: R3xAppState.monitoring_paused ? R3xIcons.play_arrow : R3xIcons.pause;
+                    clicked => { R3xAppState.toggle_monitoring_pause(); }
+                }
+            }
+
+            ExpressiveCard {
+                tier: SurfaceTier.standard;
+                corner_radius: R3xMetrics.radius_hero;
+                content_padding: R3xMetrics.space_xl;
+
+                TrafficAreaChart {
+                    has_data: R3xAppState.has_traffic_data;
+                    empty_label: R3xAppState.is_ru ? "Подключите туннель для сбора графика трафика" : "Start a tunnel connection to record throughput graph";
+                    download_stroke_commands: R3xAppState.download_stroke_path;
+                    download_fill_commands: R3xAppState.download_fill_path;
+                    upload_stroke_commands: R3xAppState.upload_stroke_path;
+                }
+            }
+
+            HorizontalLayout {
+                spacing: R3xMetrics.space_md;
+
+                ExpressiveCard {
+                    horizontal_stretch: 1;
+                    corner_radius: R3xMetrics.radius_xl;
+                    content_padding: R3xMetrics.space_lg;
+                    VerticalLayout {
+                        spacing: R3xMetrics.space_sm;
+                        MaterialText { text: R3xAppState.is_ru ? "Процесс UI (R3X)" : "R3X UI Process (sysinfo)"; style: R3xTypography.title_md; color: R3xPalette.on_surface; }
+                        R3xKeyValueRow { label: "Memory RSS"; value: R3xAppState.ui_ram_text; monospace: true; }
+                        R3xKeyValueRow { label: "CPU Usage"; value: R3xAppState.ui_cpu_text; monospace: true; }
+                    }
+                }
+
+                ExpressiveCard {
+                    horizontal_stretch: 1;
+                    corner_radius: R3xMetrics.radius_xl;
+                    content_padding: R3xMetrics.space_lg;
+                    VerticalLayout {
+                        spacing: R3xMetrics.space_sm;
+                        MaterialText { text: R3xAppState.is_ru ? "Процесс сетевого ядра" : "Active Core Subprocess"; style: R3xTypography.title_md; color: R3xPalette.on_surface; }
+                        R3xKeyValueRow { label: "Memory RSS"; value: R3xAppState.core_ram_text; monospace: true; }
+                        R3xKeyValueRow { label: "CPU Usage"; value: R3xAppState.core_cpu_text; monospace: true; }
+                    }
+                }
+            }
+        }
+
+        // Tab 1: Network Doctor (16 checks)
+        if R3xAppState.diagnostics_tab == 1 : VerticalLayout {
+            spacing: R3xMetrics.space_md;
+
+            MaterialText {
+                text: R3xAppState.doctor_summary;
+                style: R3xTypography.body_md;
+                color: R3xPalette.on_surface_variant;
+            }
+
+            if R3xAppState.diagnostic_checks.length == 0 : EmptyStateView {
+                icon: R3xIcons.monitoring;
+                title: "Network Doctor";
+                description: R3xAppState.is_ru
+                    ? "Нажмите «Запустить 16 проверок» для реальной диагностики TCP, DNS, TLS, ядер, TUN, системного прокси, портов и адаптеров."
+                    : "Run all 16 genuine checks (Internet TCP, DNS resolution, Server & TLS handshake, Core health, Config validity, TUN, System Proxy, Routing, IPv4/IPv6, DNS leaks, Adapter conflicts, Permissions, Ports).";
+                action_label: R3xAppState.is_ru ? "Запустить проверки" : "Run Network Doctor";
+                action_clicked => { R3xAppState.run_network_doctor(); }
+            }
+
+            VerticalLayout {
+                spacing: R3xMetrics.space_xs;
+                for chk[idx] in R3xAppState.diagnostic_checks : StackedListItem {
+                    position: R3xAppState.diagnostic_checks.length == 1 ? StackPosition.only
+                        : idx == 0 ? StackPosition.first
+                        : idx == R3xAppState.diagnostic_checks.length - 1 ? StackPosition.last
+                        : StackPosition.middle;
+                    clickable: false;
+
+                    HorizontalLayout {
+                        horizontal_stretch: 1;
+                        alignment: space_between;
+                        spacing: R3xMetrics.space_md;
+
+                        VerticalLayout {
+                            horizontal_stretch: 1;
+                            spacing: 2px;
+                            MaterialText { text: chk.title; style: R3xTypography.title_md; color: R3xPalette.on_surface; }
+                            MaterialText { text: chk.summary; style: R3xTypography.body_sm; color: R3xPalette.on_surface_variant; wrap: word_wrap; }
+                            if chk.suggested_action != "" : MaterialText {
+                                text: "→ " + chk.suggested_action;
+                                style: R3xTypography.label_medium;
+                                color: R3xPalette.primary;
+                                wrap: word_wrap;
+                            }
+                        }
+
+                        HorizontalLayout {
+                            spacing: R3xMetrics.space_sm;
+                            MaterialText { text: chk.duration_text; style: R3xTypography.mono_sm; color: R3xPalette.on_surface_variant; vertical_alignment: center; }
+                            VerticalLayout {
+                                alignment: center;
+                                StatusPill {
+                                    label: chk.status_label;
+                                    tone: chk.status_key == "passed" ? StatusTone.success
+                                        : chk.status_key == "warning" ? StatusTone.warning
+                                        : chk.status_key == "failed" ? StatusTone.error
+                                        : StatusTone.neutral;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Tabs 2..=5: Redacted Log Viewers
+        if R3xAppState.diagnostics_tab >= 2 : VerticalLayout {
+            spacing: R3xMetrics.space_md;
+
+            HorizontalLayout {
+                spacing: R3xMetrics.space_sm;
+                R3xTextField {
+                    horizontal_stretch: 1;
+                    placeholder: R3xAppState.is_ru ? "Поиск по журналам..." : "Filter logs (all secrets redacted)...";
+                    text <=> R3xAppState.log_search;
+                    edited(_t) => { R3xAppState.refresh_logs(); }
+                }
+                OutlineButton {
+                    text: R3xAppState.is_ru ? "Обновить" : "Refresh";
+                    icon: R3xIcons.refresh;
+                    clicked => { R3xAppState.refresh_logs(); }
+                }
+                OutlineButton {
+                    text: R3xAppState.is_ru ? "Очистить" : "Clear";
+                    icon: R3xIcons.delete;
+                    clicked => { R3xAppState.clear_logs(); }
+                }
+            }
+
+            ExpressiveCard {
+                tier: SurfaceTier.lowest;
+                outlined: true;
+                corner_radius: R3xMetrics.radius_xl;
+                content_padding: R3xMetrics.space_lg;
+
+                VerticalLayout {
+                    spacing: 6px;
+                    if R3xAppState.log_lines.length == 0 : MaterialText {
+                        text: R3xAppState.is_ru ? "Нет записей в этой категории." : "No log entries in this category yet.";
+                        style: R3xTypography.body_md;
+                        color: R3xPalette.on_surface_variant;
+                    }
+                    for row in R3xAppState.log_lines : MaterialText {
+                        text: "[" + row.timestamp + "] [" + row.level + "] " + row.source + ": " + row.message;
+                        style: R3xTypography.mono_sm;
+                        color: row.level == "Error" ? R3xPalette.error
+                            : row.level == "Warn" ? R3xPalette.warning
+                            : R3xPalette.on_surface;
+                        wrap: word_wrap;
+                    }
+                }
+            }
+        }
+    }
+}

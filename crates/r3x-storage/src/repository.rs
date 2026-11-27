@@ -442,6 +442,16 @@ impl R3xDatabase {
         Ok(rules)
     }
 
+    pub fn delete_routing_rule(&self, id: Uuid) -> Result<(), R3xError> {
+        let conn = self.conn.lock();
+        conn.execute(
+            "DELETE FROM routing_rules WHERE id = ?1",
+            params![id.to_string()],
+        )
+        .map_err(|e| R3xError::Storage(e.to_string()))?;
+        Ok(())
+    }
+
     pub fn upsert_rule_set(&self, rs: &RuleSet) -> Result<(), R3xError> {
         let json = serde_json::to_string(rs)
             .map_err(|e| R3xError::Storage(format!("serialize rule set: {e}")))?;
@@ -450,6 +460,16 @@ impl R3xDatabase {
             "INSERT INTO rule_sets (id, tag, enabled, data_json) VALUES (?1, ?2, ?3, ?4)
              ON CONFLICT(id) DO UPDATE SET tag = excluded.tag, enabled = excluded.enabled, data_json = excluded.data_json",
             params![rs.id.to_string(), rs.tag, i32::from(rs.enabled), json],
+        )
+        .map_err(|e| R3xError::Storage(e.to_string()))?;
+        Ok(())
+    }
+
+    pub fn delete_rule_set(&self, id: Uuid) -> Result<(), R3xError> {
+        let conn = self.conn.lock();
+        conn.execute(
+            "DELETE FROM rule_sets WHERE id = ?1",
+            params![id.to_string()],
         )
         .map_err(|e| R3xError::Storage(e.to_string()))?;
         Ok(())
@@ -517,6 +537,13 @@ impl R3xDatabase {
             );
         }
         Ok(out)
+    }
+
+    pub fn clear_connection_history(&self) -> Result<(), R3xError> {
+        let conn = self.conn.lock();
+        conn.execute("DELETE FROM connection_history", [])
+            .map_err(|e| R3xError::Storage(e.to_string()))?;
+        Ok(())
     }
 
     pub fn save_core_metadata(

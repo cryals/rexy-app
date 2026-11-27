@@ -1,0 +1,142 @@
+import { MaterialText, OutlineButton } from "@material";
+import { R3xPalette } from "../tokens/palette.slint";
+import { R3xMetrics } from "../tokens/metrics.slint";
+import { R3xTypography } from "../tokens/typography.slint";
+import { R3xIcons } from "../tokens/icons.slint";
+import { R3xAppState } from "../state/app_state.slint";
+import { ConnectedSegmentedGroup } from "../components/connected_button_group.slint";
+import { StackedListItem, StackPosition } from "../components/stacked_list.slint";
+import { CompactTag, StatusTone } from "../components/status_badge.slint";
+import { EmptyStateView } from "../components/empty_error_state.slint";
+import { R3xTextField } from "../components/input_fields.slint";
+
+export component ConnectionsScreen {
+    in property <bool> is_desktop: true;
+
+    VerticalLayout {
+        spacing: R3xMetrics.space_lg;
+
+        HorizontalLayout {
+            alignment: space_between;
+            spacing: R3xMetrics.space_md;
+
+            VerticalLayout {
+                spacing: 2px;
+                MaterialText {
+                    text: R3xAppState.is_ru ? "Соединения и история" : "Active Connections & History";
+                    style: R3xTypography.headline_md;
+                    color: R3xPalette.on_surface;
+                }
+                MaterialText {
+                    text: R3xAppState.is_ru
+                        ? "Реальные потоки активного ядра и сохранённый журнал сессий"
+                        : "Live flows reported by active core and persisted tunnel session history";
+                    style: R3xTypography.body_md;
+                    color: R3xPalette.on_surface_variant;
+                }
+            }
+
+            if R3xAppState.connections_subtab == 1 : OutlineButton {
+                text: R3xAppState.is_ru ? "Очистить историю" : "Clear history";
+                icon: R3xIcons.delete;
+                clicked => { R3xAppState.clear_connection_history(); }
+            }
+        }
+
+        ConnectedSegmentedGroup {
+            items: [
+                { id: "active", label: R3xAppState.is_ru ? "Активные" : "Active Flows", enabled: true, disabled_reason: "" },
+                { id: "history", label: R3xAppState.is_ru ? "История сессий" : "Session History", enabled: true, disabled_reason: "" },
+            ];
+            current_index <=> R3xAppState.connections_subtab;
+        }
+
+        R3xTextField {
+            placeholder: R3xAppState.is_ru ? "Фильтр по хосту, протоколу или правилу..." : "Filter by host, protocol, rule, or core...";
+            text <=> R3xAppState.connections_search;
+        }
+
+        if R3xAppState.connections_subtab == 0 : VerticalLayout {
+            spacing: R3xMetrics.space_xs;
+
+            if R3xAppState.active_connections.length == 0 : EmptyStateView {
+                icon: R3xIcons.hub;
+                title: R3xAppState.is_ru ? "Нет активных сокетов" : "No active core flows";
+                description: R3xAppState.is_ru
+                    ? "Подключите сервер на главном экране — сюда будут поступать реальные потоки из API статистики ядра."
+                    : "Start a tunnel connection on Home. Active sockets reported by the running core appear here automatically.";
+                action_label: R3xAppState.is_ru ? "На главную" : "Open Home";
+                action_clicked => { R3xAppState.nav_selected(0); }
+            }
+
+            for conn[idx] in R3xAppState.active_connections : StackedListItem {
+                position: R3xAppState.active_connections.length == 1 ? StackPosition.only
+                    : idx == 0 ? StackPosition.first
+                    : idx == R3xAppState.active_connections.length - 1 ? StackPosition.last
+                    : StackPosition.middle;
+                clickable: false;
+
+                HorizontalLayout {
+                    horizontal_stretch: 1;
+                    alignment: space_between;
+                    spacing: R3xMetrics.space_md;
+
+                    VerticalLayout {
+                        horizontal_stretch: 1;
+                        spacing: 2px;
+                        MaterialText { text: conn.target; style: R3xTypography.title_md; color: R3xPalette.on_surface; }
+                        MaterialText { text: conn.core_name + " · " + conn.duration_text; style: R3xTypography.mono_sm; color: R3xPalette.on_surface_variant; }
+                    }
+
+                    HorizontalLayout {
+                        spacing: R3xMetrics.space_sm;
+                        CompactTag { text: conn.protocol; tone: StatusTone.primary; }
+                        CompactTag { text: conn.rule; tone: StatusTone.neutral; }
+                        MaterialText { text: "↓ " + conn.down_text + "  ↑ " + conn.up_text; style: R3xTypography.mono_sm; color: R3xPalette.on_surface; vertical_alignment: center; }
+                    }
+                }
+            }
+        }
+
+        if R3xAppState.connections_subtab == 1 : VerticalLayout {
+            spacing: R3xMetrics.space_xs;
+
+            if R3xAppState.connection_history.length == 0 : EmptyStateView {
+                icon: R3xIcons.monitoring;
+                title: R3xAppState.is_ru ? "История подключений пуста" : "No recorded sessions yet";
+                description: R3xAppState.is_ru
+                    ? "Завершённые сессии подключения будут сохранены в локальной базе SQLite."
+                    : "Completed and attempted tunnel sessions will appear here cleanly.";
+                action_label: R3xAppState.is_ru ? "На главную" : "Open Home";
+                action_clicked => { R3xAppState.nav_selected(0); }
+            }
+
+            for item[idx] in R3xAppState.connection_history : StackedListItem {
+                position: R3xAppState.connection_history.length == 1 ? StackPosition.only
+                    : idx == 0 ? StackPosition.first
+                    : idx == R3xAppState.connection_history.length - 1 ? StackPosition.last
+                    : StackPosition.middle;
+                clickable: false;
+
+                HorizontalLayout {
+                    horizontal_stretch: 1;
+                    alignment: space_between;
+                    spacing: R3xMetrics.space_md;
+
+                    VerticalLayout {
+                        horizontal_stretch: 1;
+                        spacing: 2px;
+                        MaterialText { text: item.target; style: R3xTypography.title_md; color: R3xPalette.on_surface; }
+                        MaterialText { text: item.core_name + " · " + item.duration_text; style: R3xTypography.body_sm; color: R3xPalette.on_surface_variant; }
+                    }
+
+                    HorizontalLayout {
+                        spacing: R3xMetrics.space_sm;
+                        CompactTag { text: item.rule; tone: StatusTone.neutral; }
+                        MaterialText { text: "↓ " + item.down_text + "  ↑ " + item.up_text; style: R3xTypography.mono_sm; color: R3xPalette.on_surface_variant; vertical_alignment: center; }
+                    }
+                }
+            }
+        }
+    }
+}

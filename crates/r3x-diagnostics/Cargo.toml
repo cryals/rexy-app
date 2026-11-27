@@ -1,0 +1,28 @@
+[package]
+name = "r3x-diagnostics"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+description = "Routing rules manager, DNS probe & leak analyzer, 16-check Network Doctor, and bounded telemetry/SVG chart hub"
+
+[dependencies]
+chrono.workspace = true
+parking_lot.workspace = true
+r3x-domain.workspace = true
+r3x-engine.workspace = true
+r3x-network.workspace = true
+r3x-security.workspace = true
+r3x-storage.workspace = true
+reqwest.workspace = true
+rustls.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sysinfo.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

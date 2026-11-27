@@ -1,0 +1,218 @@
+import { MaterialText, StateLayerArea, Switch } from "@material";
+import { R3xPalette } from "../tokens/palette.slint";
+import { R3xMetrics } from "../tokens/metrics.slint";
+import { R3xTypography } from "../tokens/typography.slint";
+import { R3xIcons } from "../tokens/icons.slint";
+import { StackedListItem, StackPosition } from "./stacked_list.slint";
+
+export component R3xSectionHeader {
+    in property <string> title;
+    in property <string> subtitle;
+
+    VerticalLayout {
+        spacing: 2px;
+        MaterialText {
+            text: root.title;
+            style: R3xTypography.title_large;
+            color: R3xPalette.on_surface;
+        }
+        if root.subtitle != "" : MaterialText {
+            text: root.subtitle;
+            style: R3xTypography.body_sm;
+            color: R3xPalette.on_surface_variant;
+            wrap: word_wrap;
+        }
+    }
+}
+
+export component R3xTextField {
+    in property <string> label;
+    in property <string> placeholder;
+    in-out property <string> text;
+    in property <bool> is_password: false;
+    in property <bool> monospace: false;
+    in property <bool> enabled: true;
+
+    callback accepted();
+    callback edited(value: string);
+
+    VerticalLayout {
+        spacing: 6px;
+
+        if root.label != "" : MaterialText {
+            text: root.label;
+            style: R3xTypography.label_medium;
+            color: R3xPalette.on_surface_variant;
+        }
+
+        Rectangle {
+            min_height: 46px;
+            background: R3xPalette.surface_container_lowest;
+            border_radius: R3xMetrics.radius_md;
+            border_width: input.has_focus ? 2px : 1px;
+            border_color: input.has_focus ? R3xPalette.primary : R3xPalette.outline_variant;
+
+            HorizontalLayout {
+                padding_left: R3xMetrics.space_md;
+                padding_right: R3xMetrics.space_md;
+                padding_top: R3xMetrics.space_sm;
+                padding_bottom: R3xMetrics.space_sm;
+
+                Rectangle {
+                    horizontal_stretch: 1;
+                    min_height: 24px;
+                    clip: true;
+
+                    if root.text == "" && root.placeholder != "" : MaterialText {
+                        width: 100%;
+                        height: 100%;
+                        text: root.placeholder;
+                        style: root.monospace ? R3xTypography.mono_md : R3xTypography.body_md;
+                        color: R3xPalette.on_surface_variant.with_alpha(0.65);
+                        vertical_alignment: center;
+                    }
+
+                    input := TextInput {
+                        width: 100%;
+                        height: 100%;
+                        text <=> root.text;
+                        enabled: root.enabled;
+                        font_size: 14px;
+                        color: R3xPalette.on_surface;
+                        selection_background_color: R3xPalette.primary_container;
+                        selection_foreground_color: R3xPalette.on_primary_container;
+                        vertical_alignment: center;
+                        single_line: true;
+                        input_type: root.is_password ? InputType.password : InputType.text;
+
+                        accepted => { root.accepted(); }
+                        edited => { root.edited(self.text); }
+                    }
+                }
+            }
+        }
+    }
+}
+
+export component R3xFilterChip {
+    in property <string> label;
+    in property <bool> selected: false;
+
+    callback clicked();
+
+    min_height: 36px;
+    accessible-role: checkbox;
+    accessible-label: root.label;
+    accessible-checked: root.selected;
+
+    Rectangle {
+        background: root.selected ? R3xPalette.secondary_container : R3xPalette.surface_container;
+        border_radius: R3xMetrics.radius_full;
+        border_width: root.selected ? 0px : 1px;
+        border_color: R3xPalette.outline_variant;
+        clip: true;
+
+        StateLayerArea {
+            width: 100%;
+            height: 100%;
+            color: root.selected ? R3xPalette.on_secondary_container : R3xPalette.on_surface;
+
+            HorizontalLayout {
+                padding_left: R3xMetrics.space_md;
+                padding_right: R3xMetrics.space_md;
+                spacing: 6px;
+                alignment: center;
+
+                if root.selected : VerticalLayout {
+                    alignment: center;
+                    Image {
+                        width: 16px;
+                        height: 16px;
+                        source: R3xIcons.check;
+                        colorize: R3xPalette.on_secondary_container;
+                    }
+                }
+
+                MaterialText {
+                    text: root.label;
+                    style: R3xTypography.label_large;
+                    color: root.selected ? R3xPalette.on_secondary_container : R3xPalette.on_surface_variant;
+                    vertical_alignment: center;
+                }
+            }
+
+            clicked => { root.clicked(); }
+        }
+    }
+}
+
+export component R3xSwitchRow inherits StackedListItem {
+    in property <string> title;
+    in property <string> subtitle;
+    in property <bool> checked: false;
+
+    callback toggled(value: bool);
+
+    clickable: false;
+    outer_radius: R3xMetrics.radius_xl;
+
+    HorizontalLayout {
+        horizontal_stretch: 1;
+        alignment: space_between;
+        spacing: R3xMetrics.space_md;
+
+        VerticalLayout {
+            horizontal_stretch: 1;
+            alignment: center;
+            spacing: 2px;
+
+            MaterialText {
+                text: root.title;
+                style: R3xTypography.body_large;
+                color: R3xPalette.on_surface;
+                wrap: word_wrap;
+            }
+            if root.subtitle != "" : MaterialText {
+                text: root.subtitle;
+                style: R3xTypography.body_sm;
+                color: R3xPalette.on_surface_variant;
+                wrap: word_wrap;
+            }
+        }
+
+        VerticalLayout {
+            alignment: center;
+            Switch {
+                checked: root.checked;
+                checked_state_changed(v) => { root.toggled(v); }
+            }
+        }
+    }
+}
+
+export component R3xKeyValueRow {
+    in property <string> label;
+    in property <string> value;
+    in property <bool> monospace: false;
+
+    HorizontalLayout {
+        alignment: space_between;
+        spacing: R3xMetrics.space_md;
+        min_height: 28px;
+
+        MaterialText {
+            text: root.label;
+            style: R3xTypography.body_sm;
+            color: R3xPalette.on_surface_variant;
+            vertical_alignment: center;
+        }
+        MaterialText {
+            text: root.value;
+            style: root.monospace ? R3xTypography.mono_sm : R3xTypography.label_large;
+            color: R3xPalette.on_surface;
+            vertical_alignment: center;
+            horizontal_alignment: right;
+            wrap: word_wrap;
+        }
+    }
+}

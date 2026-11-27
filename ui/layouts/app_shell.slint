@@ -1,14 +1,24 @@
-import { MaterialText, ScrollView, StateLayerArea } from "@material";
+import { FilledButton, IconButton, MaterialText, OutlineButton, ScrollView, StateLayerArea, TextButton } from "@material";
 import { R3xPalette } from "../tokens/palette.slint";
 import { R3xMetrics, R3xMotion } from "../tokens/metrics.slint";
 import { R3xTypography } from "../tokens/typography.slint";
 import { R3xIcons } from "../tokens/icons.slint";
 import { R3xAppState } from "../state/app_state.slint";
 import { CompactTag, StatusTone } from "../components/status_badge.slint";
+import { StackPosition } from "../components/stacked_list.slint";
 import { HeroState } from "../components/connection_hero_button.slint";
-import { EmptyStateView } from "../components/empty_error_state.slint";
+import { ConnectedSegmentedGroup } from "../components/connected_button_group.slint";
+import { ExpressiveModal } from "../components/modal_sheet.slint";
+import { R3xFilterChip, R3xSwitchRow, R3xTextField } from "../components/input_fields.slint";
 import { HomeScreen } from "../screens/home_screen.slint";
-import { SettingsFoundationScreen } from "../screens/settings_preview.slint";
+import { OnboardingScreen } from "../screens/onboarding_screen.slint";
+import { SubscriptionsScreen } from "../screens/subscriptions_screen.slint";
+import { ServersScreen } from "../screens/servers_screen.slint";
+import { RoutingScreen } from "../screens/routing_screen.slint";
+import { ConnectionsScreen } from "../screens/connections_screen.slint";
+import { DiagnosticsScreen } from "../screens/diagnostics_screen.slint";
+import { CoreManagerScreen } from "../screens/core_manager_screen.slint";
+import { SettingsScreen } from "../screens/settings_screen.slint";
 
 component DrawerDestination {
     in property <string> label;
@@ -120,7 +130,17 @@ component MobileNavDestination {
 export component R3xAppShell {
     in property <bool> is_desktop: true;
 
-    HorizontalLayout {
+    // Onboarding Flow Gate
+    if R3xAppState.show_onboarding : OnboardingScreen {
+        x: 0px;
+        y: 0px;
+        width: 100%;
+        height: 100%;
+        is_desktop: root.is_desktop;
+    }
+
+    // Main Multi-Core Client Workspace
+    if !R3xAppState.show_onboarding : HorizontalLayout {
         x: 0px;
         y: 0px;
         width: 100%;
@@ -136,7 +156,6 @@ export component R3xAppShell {
                 easing: R3xMotion.ease_standard;
             }
 
-            // Right hairline divider
             Rectangle {
                 x: parent.width - 1px;
                 width: 1px;
@@ -152,7 +171,6 @@ export component R3xAppShell {
                 VerticalLayout {
                     spacing: R3xMetrics.space_lg;
 
-                    // Brand header + collapse button
                     HorizontalLayout {
                         alignment: R3xAppState.drawer_collapsed ? center : space_between;
                         padding_left: R3xAppState.drawer_collapsed ? 0px : R3xMetrics.space_sm;
@@ -203,66 +221,17 @@ export component R3xAppShell {
                     VerticalLayout {
                         spacing: R3xMetrics.space_xs;
 
-                        DrawerDestination {
-                            label: R3xAppState.is_ru ? "Главная" : "Home";
-                            icon: R3xIcons.home;
-                            selected: R3xAppState.current_nav == 0;
-                            collapsed: R3xAppState.drawer_collapsed;
-                            clicked => { R3xAppState.nav_selected(0); }
-                        }
-                        DrawerDestination {
-                            label: R3xAppState.is_ru ? "Подписки" : "Subscriptions";
-                            icon: R3xIcons.dns;
-                            selected: R3xAppState.current_nav == 1;
-                            collapsed: R3xAppState.drawer_collapsed;
-                            clicked => { R3xAppState.nav_selected(1); }
-                        }
-                        DrawerDestination {
-                            label: R3xAppState.is_ru ? "Серверы" : "Servers";
-                            icon: R3xIcons.public;
-                            selected: R3xAppState.current_nav == 2;
-                            collapsed: R3xAppState.drawer_collapsed;
-                            clicked => { R3xAppState.nav_selected(2); }
-                        }
-                        DrawerDestination {
-                            label: R3xAppState.is_ru ? "Маршруты" : "Routing";
-                            icon: R3xIcons.alt_route;
-                            selected: R3xAppState.current_nav == 3;
-                            collapsed: R3xAppState.drawer_collapsed;
-                            clicked => { R3xAppState.nav_selected(3); }
-                        }
-                        DrawerDestination {
-                            label: R3xAppState.is_ru ? "Соединения" : "Connections";
-                            icon: R3xIcons.hub;
-                            selected: R3xAppState.current_nav == 4;
-                            collapsed: R3xAppState.drawer_collapsed;
-                            clicked => { R3xAppState.nav_selected(4); }
-                        }
-                        DrawerDestination {
-                            label: R3xAppState.is_ru ? "Диагностика" : "Diagnostics";
-                            icon: R3xIcons.monitoring;
-                            selected: R3xAppState.current_nav == 5;
-                            collapsed: R3xAppState.drawer_collapsed;
-                            clicked => { R3xAppState.nav_selected(5); }
-                        }
-                        DrawerDestination {
-                            label: R3xAppState.is_ru ? "Ядра" : "Core Manager";
-                            icon: R3xIcons.memory;
-                            selected: R3xAppState.current_nav == 6;
-                            collapsed: R3xAppState.drawer_collapsed;
-                            clicked => { R3xAppState.nav_selected(6); }
-                        }
-                        DrawerDestination {
-                            label: R3xAppState.is_ru ? "Настройки" : "Settings";
-                            icon: R3xIcons.settings;
-                            selected: R3xAppState.current_nav == 7;
-                            collapsed: R3xAppState.drawer_collapsed;
-                            clicked => { R3xAppState.nav_selected(7); }
-                        }
+                        DrawerDestination { label: R3xAppState.is_ru ? "Главная" : "Home"; icon: R3xIcons.home; selected: R3xAppState.current_nav == 0; collapsed: R3xAppState.drawer_collapsed; clicked => { R3xAppState.nav_selected(0); } }
+                        DrawerDestination { label: R3xAppState.is_ru ? "Подписки" : "Subscriptions"; icon: R3xIcons.dns; selected: R3xAppState.current_nav == 1; collapsed: R3xAppState.drawer_collapsed; clicked => { R3xAppState.nav_selected(1); } }
+                        DrawerDestination { label: R3xAppState.is_ru ? "Серверы" : "Servers"; icon: R3xIcons.public; selected: R3xAppState.current_nav == 2; collapsed: R3xAppState.drawer_collapsed; clicked => { R3xAppState.nav_selected(2); } }
+                        DrawerDestination { label: R3xAppState.is_ru ? "Маршруты" : "Routing"; icon: R3xIcons.alt_route; selected: R3xAppState.current_nav == 3; collapsed: R3xAppState.drawer_collapsed; clicked => { R3xAppState.nav_selected(3); } }
+                        DrawerDestination { label: R3xAppState.is_ru ? "Соединения" : "Connections"; icon: R3xIcons.hub; selected: R3xAppState.current_nav == 4; collapsed: R3xAppState.drawer_collapsed; clicked => { R3xAppState.nav_selected(4); } }
+                        DrawerDestination { label: R3xAppState.is_ru ? "Диагностика" : "Diagnostics"; icon: R3xIcons.monitoring; selected: R3xAppState.current_nav == 5; collapsed: R3xAppState.drawer_collapsed; clicked => { R3xAppState.nav_selected(5); } }
+                        DrawerDestination { label: R3xAppState.is_ru ? "Ядра" : "Core Manager"; icon: R3xIcons.memory; selected: R3xAppState.current_nav == 6; collapsed: R3xAppState.drawer_collapsed; clicked => { R3xAppState.nav_selected(6); } }
+                        DrawerDestination { label: R3xAppState.is_ru ? "Настройки" : "Settings"; icon: R3xIcons.settings; selected: R3xAppState.current_nav == 7; collapsed: R3xAppState.drawer_collapsed; clicked => { R3xAppState.nav_selected(7); } }
                     }
                 }
 
-                // Bottom Core Status Card
                 if !R3xAppState.drawer_collapsed : Rectangle {
                     background: R3xPalette.surface_container;
                     border_radius: R3xMetrics.radius_xl;
@@ -311,11 +280,9 @@ export component R3xAppShell {
             }
         }
 
-        // Main Workspace + Mobile Chrome
         VerticalLayout {
             horizontal_stretch: 1;
 
-            // Mobile Top App Bar
             if !root.is_desktop : HorizontalLayout {
                 padding_left: R3xMetrics.space_lg;
                 padding_right: R3xMetrics.space_lg;
@@ -325,16 +292,11 @@ export component R3xAppShell {
 
                 HorizontalLayout {
                     spacing: R3xMetrics.space_sm;
-                    MaterialText {
-                        text: "R3X";
-                        style: R3xTypography.headline_md;
-                        color: R3xPalette.on_surface;
-                        vertical_alignment: center;
-                    }
+                    MaterialText { text: "R3X"; style: R3xTypography.headline_md; color: R3xPalette.on_surface; vertical_alignment: center; }
                     VerticalLayout {
                         alignment: center;
                         CompactTag {
-                            text: R3xAppState.hero_state == HeroState.connected ? "TUN" : "Idle";
+                            text: R3xAppState.hero_state == HeroState.connected ? "Connected" : "Idle";
                             tone: R3xAppState.hero_state == HeroState.connected ? StatusTone.success : StatusTone.neutral;
                         }
                     }
@@ -342,30 +304,19 @@ export component R3xAppShell {
 
                 HorizontalLayout {
                     spacing: R3xMetrics.space_xs;
-                    Rectangle {
-                        width: 48px;
-                        height: 48px;
-                        border_radius: 24px;
-                        clip: true;
-                        StateLayerArea {
-                            width: 100%;
-                            height: 100%;
-                            color: R3xPalette.on_surface;
-                            Image {
-                                width: 22px;
-                                height: 22px;
-                                x: 13px;
-                                y: 13px;
-                                source: R3xAppState.hero_state == HeroState.connected ? R3xIcons.verified_user : R3xIcons.shield;
-                                colorize: R3xAppState.hero_state == HeroState.connected ? R3xPalette.success : R3xPalette.on_surface_variant;
-                            }
-                            clicked => { R3xAppState.nav_selected(5); }
-                        }
+                    IconButton {
+                        icon: R3xIcons.public;
+                        tooltip: "Servers";
+                        clicked => { R3xAppState.nav_selected(2); }
+                    }
+                    IconButton {
+                        icon: R3xAppState.hero_state == HeroState.connected ? R3xIcons.verified_user : R3xIcons.shield;
+                        tooltip: "Diagnostics";
+                        clicked => { R3xAppState.nav_selected(5); }
                     }
                 }
             }
 
-            // Scrollable Page Body
             ScrollView {
                 vertical_stretch: 1;
 
@@ -373,77 +324,17 @@ export component R3xAppShell {
                     padding: root.is_desktop ? R3xMetrics.page_desktop : R3xMetrics.page_mobile;
                     spacing: R3xMetrics.space_lg;
 
-                    if R3xAppState.current_nav == 0 : HomeScreen {
-                        is_desktop: root.is_desktop;
-                    }
-
-                    if R3xAppState.current_nav == 1 : EmptyStateView {
-                        icon: R3xIcons.dns;
-                        title: R3xAppState.is_ru ? "Подписки" : "Subscriptions";
-                        description: R3xAppState.is_ru
-                            ? "Локальное хранилище готово (" + R3xAppState.subscription_count + " подписок). Импорт URL/QR/YAML подключается на следующем этапе."
-                            : "SQLite store initialized (" + R3xAppState.subscription_count + " feeds). Subscription parsers and HTTP refresh attach in Wave 2.";
-                        action_label: R3xAppState.is_ru ? "На главную" : "Back to Home";
-                        action_clicked => { R3xAppState.nav_selected(0); }
-                    }
-
-                    if R3xAppState.current_nav == 2 : EmptyStateView {
-                        icon: R3xIcons.public;
-                        title: R3xAppState.is_ru ? "Серверы и профили" : "Servers & Profiles";
-                        description: R3xAppState.is_ru
-                            ? "В базе данных: " + R3xAppState.profile_count + " профилей."
-                            : "Stored profiles: " + R3xAppState.profile_count + ". Full server selector table and latency benchmark matrix arrive in Wave 3.";
-                        action_label: R3xAppState.is_ru ? "На главную" : "Back to Home";
-                        action_clicked => { R3xAppState.nav_selected(0); }
-                    }
-
-                    if R3xAppState.current_nav == 3 : EmptyStateView {
-                        icon: R3xIcons.alt_route;
-                        title: R3xAppState.is_ru ? "Маршрутизация и DNS" : "Routing & DNS";
-                        description: R3xAppState.is_ru
-                            ? "Активных правил маршрутизации: " + R3xAppState.routing_rule_count + "."
-                            : "Configured routing rules: " + R3xAppState.routing_rule_count + ". Visual rule builder and DNS leak checks arrive in Wave 3.";
-                        action_label: R3xAppState.is_ru ? "На главную" : "Back to Home";
-                        action_clicked => { R3xAppState.nav_selected(0); }
-                    }
-
-                    if R3xAppState.current_nav == 4 : EmptyStateView {
-                        icon: R3xIcons.hub;
-                        title: R3xAppState.is_ru ? "Активные соединения" : "Active Connections";
-                        description: R3xAppState.is_ru
-                            ? "Инспектор соединений подключается вместе с сетевыми ядрами."
-                            : "Live connection inspector attaches to running core APIs in Wave 2/3.";
-                        action_label: R3xAppState.is_ru ? "На главную" : "Back to Home";
-                        action_clicked => { R3xAppState.nav_selected(0); }
-                    }
-
-                    if R3xAppState.current_nav == 5 : EmptyStateView {
-                        icon: R3xIcons.monitoring;
-                        title: R3xAppState.is_ru ? "Диагностика и журналы" : "Diagnostics & Logs";
-                        description: R3xAppState.is_ru
-                            ? "Центр журналирования активен (" + R3xAppState.log_entry_count + " записей, с автоматическим скрытием секретов)."
-                            : "Redacted LogHub active (" + R3xAppState.log_entry_count + " entries recorded). Network Doctor checks arrive in Wave 3.";
-                        action_label: R3xAppState.is_ru ? "На главную" : "Back to Home";
-                        action_clicked => { R3xAppState.nav_selected(0); }
-                    }
-
-                    if R3xAppState.current_nav == 6 : EmptyStateView {
-                        icon: R3xIcons.memory;
-                        title: R3xAppState.is_ru ? "Менеджер ядер" : "Core Manager";
-                        description: R3xAppState.is_ru
-                            ? "Контракт адаптеров и Smart Core Selector готовы. Манифесты Xray, sing-box, Mihomo и расширенных ядер подключаются в Wave 2."
-                            : "CoreAdapter contract and Smart Core Selector ready. Xray-core, sing-box, Mihomo, and extended core adapters arrive in Wave 2/3.";
-                        action_label: R3xAppState.is_ru ? "На главную" : "Back to Home";
-                        action_clicked => { R3xAppState.nav_selected(0); }
-                    }
-
-                    if R3xAppState.current_nav == 7 : SettingsFoundationScreen {
-                        is_desktop: root.is_desktop;
-                    }
+                    if R3xAppState.current_nav == 0 : HomeScreen { is_desktop: root.is_desktop; }
+                    if R3xAppState.current_nav == 1 : SubscriptionsScreen { is_desktop: root.is_desktop; }
+                    if R3xAppState.current_nav == 2 : ServersScreen { is_desktop: root.is_desktop; }
+                    if R3xAppState.current_nav == 3 : RoutingScreen { is_desktop: root.is_desktop; }
+                    if R3xAppState.current_nav == 4 : ConnectionsScreen { is_desktop: root.is_desktop; }
+                    if R3xAppState.current_nav == 5 : DiagnosticsScreen { is_desktop: root.is_desktop; }
+                    if R3xAppState.current_nav == 6 : CoreManagerScreen { is_desktop: root.is_desktop; }
+                    if R3xAppState.current_nav == 7 : SettingsScreen { is_desktop: root.is_desktop; }
                 }
             }
 
-            // Mobile 80px Bottom Navigation Bar (4 destinations)
             if !root.is_desktop : Rectangle {
                 height: R3xMetrics.bottom_bar_height;
                 background: R3xPalette.surface_container;
@@ -453,31 +344,211 @@ export component R3xAppShell {
                     padding_right: R3xMetrics.space_sm;
                     spacing: R3xMetrics.space_sm;
 
-                    MobileNavDestination {
-                        label: R3xAppState.is_ru ? "Главная" : "Home";
-                        icon: R3xIcons.home;
-                        selected: R3xAppState.current_nav == 0;
-                        clicked => { R3xAppState.nav_selected(0); }
-                    }
-                    MobileNavDestination {
-                        label: R3xAppState.is_ru ? "Подписки" : "Subscriptions";
-                        icon: R3xIcons.dns;
-                        selected: R3xAppState.current_nav == 1;
-                        clicked => { R3xAppState.nav_selected(1); }
-                    }
-                    MobileNavDestination {
-                        label: R3xAppState.is_ru ? "Диагностика" : "Diagnostics";
-                        icon: R3xIcons.monitoring;
-                        selected: R3xAppState.current_nav == 5;
-                        clicked => { R3xAppState.nav_selected(5); }
-                    }
-                    MobileNavDestination {
-                        label: R3xAppState.is_ru ? "Настройки" : "Settings";
-                        icon: R3xIcons.settings;
-                        selected: R3xAppState.current_nav == 7;
-                        clicked => { R3xAppState.nav_selected(7); }
-                    }
+                    MobileNavDestination { label: R3xAppState.is_ru ? "Главная" : "Home"; icon: R3xIcons.home; selected: R3xAppState.current_nav == 0; clicked => { R3xAppState.nav_selected(0); } }
+                    MobileNavDestination { label: R3xAppState.is_ru ? "Подписки" : "Subscriptions"; icon: R3xIcons.dns; selected: R3xAppState.current_nav == 1; clicked => { R3xAppState.nav_selected(1); } }
+                    MobileNavDestination { label: R3xAppState.is_ru ? "Диагностика" : "Diagnostics"; icon: R3xIcons.monitoring; selected: R3xAppState.current_nav == 5; clicked => { R3xAppState.nav_selected(5); } }
+                    MobileNavDestination { label: R3xAppState.is_ru ? "Настройки" : "Settings"; icon: R3xIcons.settings; selected: R3xAppState.current_nav == 7; clicked => { R3xAppState.nav_selected(7); } }
                 }
+            }
+        }
+    }
+
+    // Modal Dialog Overlays
+    if R3xAppState.active_modal == "add_subscription" : ExpressiveModal {
+        title: R3xAppState.is_ru ? "Добавить подписку" : "Add Subscription Feed";
+        is_desktop: root.is_desktop;
+        close_requested => { R3xAppState.close_modal(); }
+
+        R3xTextField { label: "Feed Name"; placeholder: "My Provider"; text <=> R3xAppState.form_sub_name; }
+        R3xTextField { label: "Subscription URL (HTTPS)"; placeholder: "https://example.com/sub/..."; monospace: true; text <=> R3xAppState.form_sub_url; }
+        HorizontalLayout {
+            alignment: end;
+            spacing: R3xMetrics.space_sm;
+            OutlineButton { text: "Cancel"; clicked => { R3xAppState.close_modal(); } }
+            FilledButton {
+                text: R3xAppState.is_ru ? "Сохранить и загрузить" : "Add & Fetch";
+                icon: R3xIcons.check;
+                clicked => {
+                    R3xAppState.submit_add_subscription(R3xAppState.form_sub_name, R3xAppState.form_sub_url);
+                    R3xAppState.close_modal();
+                }
+            }
+        }
+    }
+
+    if R3xAppState.active_modal == "import_uri" : ExpressiveModal {
+        title: R3xAppState.is_ru ? "Импорт URI или конфигурации" : "Import URI or Config Payload";
+        is_desktop: root.is_desktop;
+        close_requested => { R3xAppState.close_modal(); }
+
+        MaterialText {
+            text: "Supports vless://, vmess://, trojan://, ss://, hy2://, tuic://, wg://, awg://, Clash YAML, sing-box/Xray JSON, WireGuard INI.";
+            style: R3xTypography.body_sm;
+            color: R3xPalette.on_surface_variant;
+            wrap: word_wrap;
+        }
+        R3xTextField { label: "URI or Config Text"; placeholder: "vless://uuid@host:443#Name"; monospace: true; text <=> R3xAppState.form_import_text; }
+        HorizontalLayout {
+            alignment: end;
+            spacing: R3xMetrics.space_sm;
+            OutlineButton { text: "Cancel"; clicked => { R3xAppState.close_modal(); } }
+            FilledButton {
+                text: R3xAppState.is_ru ? "Импортировать" : "Import";
+                icon: R3xIcons.add;
+                clicked => {
+                    R3xAppState.submit_import_uri(R3xAppState.form_import_text);
+                    R3xAppState.close_modal();
+                }
+            }
+        }
+    }
+
+    if R3xAppState.active_modal == "manual_profile" : ExpressiveModal {
+        title: R3xAppState.is_ru ? "Создать профиль вручную" : "Create Manual Profile";
+        is_desktop: root.is_desktop;
+        close_requested => { R3xAppState.close_modal(); }
+
+        ConnectedSegmentedGroup {
+            items: [
+                { id: "vless", label: "VLESS", enabled: true, disabled_reason: "" },
+                { id: "trojan", label: "Trojan", enabled: true, disabled_reason: "" },
+                { id: "ss", label: "Shadowsocks", enabled: true, disabled_reason: "" },
+                { id: "hy2", label: "Hysteria 2", enabled: true, disabled_reason: "" },
+            ];
+            current_index <=> R3xAppState.form_profile_proto_idx;
+        }
+        R3xTextField { label: "Profile Name"; placeholder: "Amsterdam Edge"; text <=> R3xAppState.form_profile_name; }
+        HorizontalLayout {
+            spacing: R3xMetrics.space_md;
+            R3xTextField { horizontal_stretch: 3; label: "Server Host"; placeholder: "203.0.113.10"; monospace: true; text <=> R3xAppState.form_profile_host; }
+            R3xTextField { horizontal_stretch: 1; label: "Port"; placeholder: "443"; monospace: true; text <=> R3xAppState.form_profile_port; }
+        }
+        R3xTextField { label: "UUID / Password / PSK"; is_password: true; monospace: true; text <=> R3xAppState.form_profile_secret; }
+        R3xTextField { label: "TLS SNI (optional)"; placeholder: "example.com"; monospace: true; text <=> R3xAppState.form_profile_sni; }
+        HorizontalLayout {
+            alignment: end;
+            spacing: R3xMetrics.space_sm;
+            OutlineButton { text: "Cancel"; clicked => { R3xAppState.close_modal(); } }
+            FilledButton {
+                text: R3xAppState.is_ru ? "Сохранить профиль" : "Save Profile";
+                icon: R3xIcons.check;
+                clicked => {
+                    R3xAppState.submit_manual_profile(
+                        R3xAppState.form_profile_name,
+                        R3xAppState.form_profile_proto_idx,
+                        R3xAppState.form_profile_host,
+                        R3xAppState.form_profile_port,
+                        R3xAppState.form_profile_secret,
+                        R3xAppState.form_profile_sni
+                    );
+                    R3xAppState.close_modal();
+                }
+            }
+        }
+    }
+
+    if R3xAppState.active_modal == "add_rule" : ExpressiveModal {
+        title: R3xAppState.is_ru ? "Новое правило маршрутизации" : "Add Routing Rule";
+        is_desktop: root.is_desktop;
+        close_requested => { R3xAppState.close_modal(); }
+
+        R3xTextField { label: "Rule Name"; placeholder: "Bypass Local Docs"; text <=> R3xAppState.form_rule_name; }
+        ConnectedSegmentedGroup {
+            items: [
+                { id: "domain_suffix", label: "Domain Suffix", enabled: true, disabled_reason: "" },
+                { id: "ip", label: "IP / CIDR", enabled: true, disabled_reason: "" },
+                { id: "app", label: "Process / App", enabled: true, disabled_reason: "" },
+            ];
+            current_index <=> R3xAppState.form_rule_type_idx;
+        }
+        R3xTextField { label: "Matcher Value"; placeholder: "example.internal"; monospace: true; text <=> R3xAppState.form_rule_value; }
+        ConnectedSegmentedGroup {
+            items: [
+                { id: "direct", label: "Direct", enabled: true, disabled_reason: "" },
+                { id: "proxy", label: "Proxy", enabled: true, disabled_reason: "" },
+                { id: "block", label: "Block", enabled: true, disabled_reason: "" },
+            ];
+            current_index <=> R3xAppState.form_rule_action_idx;
+        }
+        HorizontalLayout {
+            alignment: end;
+            spacing: R3xMetrics.space_sm;
+            OutlineButton { text: "Cancel"; clicked => { R3xAppState.close_modal(); } }
+            FilledButton {
+                text: R3xAppState.is_ru ? "Создать" : "Save Rule";
+                icon: R3xIcons.check;
+                clicked => {
+                    R3xAppState.submit_add_rule(
+                        R3xAppState.form_rule_name,
+                        R3xAppState.form_rule_type_idx,
+                        R3xAppState.form_rule_value,
+                        R3xAppState.form_rule_action_idx
+                    );
+                    R3xAppState.close_modal();
+                }
+            }
+        }
+    }
+
+    if R3xAppState.active_modal == "quick_settings" : ExpressiveModal {
+        title: R3xAppState.is_ru ? "Быстрые настройки подключения" : "Quick Connection Settings";
+        is_desktop: root.is_desktop;
+        close_requested => { R3xAppState.close_modal(); }
+
+        R3xSwitchRow { position: StackPosition.first; title: "Auto-reconnect"; checked: R3xAppState.auto_reconnect; toggled(v) => { R3xAppState.toggle_setting("auto_reconnect", v); } }
+        R3xSwitchRow { position: StackPosition.middle; title: "Allow LAN sharing"; checked: R3xAppState.allow_lan; toggled(v) => { R3xAppState.toggle_setting("allow_lan", v); } }
+        R3xSwitchRow { position: StackPosition.last; title: "Kill Switch Guard"; checked: R3xAppState.kill_switch; toggled(v) => { R3xAppState.toggle_setting("kill_switch", v); } }
+        HorizontalLayout {
+            alignment: end;
+            spacing: R3xMetrics.space_sm;
+            OutlineButton { text: "All Settings"; clicked => { R3xAppState.close_modal(); R3xAppState.nav_selected(7); } }
+            FilledButton { text: "Done"; clicked => { R3xAppState.close_modal(); } }
+        }
+    }
+
+    if R3xAppState.active_modal == "report_preview" : ExpressiveModal {
+        title: R3xAppState.is_ru ? "Очищенный отчёт диагностики" : "Redacted Diagnostic Report";
+        is_desktop: root.is_desktop;
+        max_dialog_width: 720px;
+        close_requested => { R3xAppState.close_modal(); }
+
+        MaterialText {
+            text: R3xAppState.doctor_report_text;
+            style: R3xTypography.mono_sm;
+            color: R3xPalette.on_surface;
+            wrap: word_wrap;
+        }
+        HorizontalLayout {
+            alignment: end;
+            FilledButton { text: "Close"; clicked => { R3xAppState.close_modal(); } }
+        }
+    }
+
+    // Bottom Snackbar Notification Pill
+    if R3xAppState.snackbar_message != "" : Rectangle {
+        x: (parent.width - self.width) / 2;
+        y: parent.height - self.height - (root.is_desktop ? 24px : 96px);
+        width: min(parent.width - 32px, 520px);
+        height: 48px;
+        background: R3xPalette.primary_container;
+        border_radius: R3xMetrics.radius_full;
+
+        HorizontalLayout {
+            padding_left: R3xMetrics.space_lg;
+            padding_right: R3xMetrics.space_sm;
+            alignment: space_between;
+            spacing: R3xMetrics.space_sm;
+
+            MaterialText {
+                text: R3xAppState.snackbar_message;
+                style: R3xTypography.label_large;
+                color: R3xPalette.on_primary_container;
+                vertical_alignment: center;
+                horizontal_stretch: 1;
+            }
+            TextButton {
+                text: R3xAppState.is_ru ? "ОК" : "Dismiss";
+                clicked => { R3xAppState.dismiss_snackbar(); }
             }
         }
     }

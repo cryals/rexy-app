@@ -1,0 +1,244 @@
+import { FilledButton, IconButton, MaterialText, OutlineButton } from "@material";
+import { R3xPalette } from "../tokens/palette.slint";
+import { R3xMetrics } from "../tokens/metrics.slint";
+import { R3xTypography } from "../tokens/typography.slint";
+import { R3xIcons, R3xFlags } from "../tokens/icons.slint";
+import { R3xAppState } from "../state/app_state.slint";
+import { ExpressiveCard, SurfaceTier } from "../components/expressive_card.slint";
+import { StackedListItem, StackPosition } from "../components/stacked_list.slint";
+import { CompactTag, StatusTone } from "../components/status_badge.slint";
+import { EmptyStateView } from "../components/empty_error_state.slint";
+import { R3xFilterChip, R3xKeyValueRow, R3xTextField } from "../components/input_fields.slint";
+
+export component ServersScreen {
+    in property <bool> is_desktop: true;
+
+    VerticalLayout {
+        spacing: R3xMetrics.space_lg;
+
+        HorizontalLayout {
+            alignment: space_between;
+            spacing: R3xMetrics.space_md;
+
+            VerticalLayout {
+                spacing: 2px;
+                MaterialText {
+                    text: R3xAppState.is_ru ? "Серверы и профили" : "Servers & Profiles";
+                    style: R3xTypography.headline_md;
+                    color: R3xPalette.on_surface;
+                }
+                MaterialText {
+                    text: (R3xAppState.is_ru ? "Всего профилей: " : "Stored profiles: ") + R3xAppState.profile_count;
+                    style: R3xTypography.body_md;
+                    color: R3xPalette.on_surface_variant;
+                }
+            }
+
+            HorizontalLayout {
+                spacing: R3xMetrics.space_sm;
+                OutlineButton {
+                    text: R3xAppState.is_ru ? "Тест всех" : "Test latencies";
+                    icon: R3xIcons.signal_cellular_alt;
+                    clicked => { R3xAppState.test_all_latencies(); }
+                }
+                OutlineButton {
+                    text: R3xAppState.is_ru ? "Импорт" : "Import URI";
+                    icon: R3xIcons.add;
+                    clicked => { R3xAppState.open_modal("import_uri"); }
+                }
+                FilledButton {
+                    text: R3xAppState.is_ru ? "Вручную" : "Manual";
+                    icon: R3xIcons.edit;
+                    clicked => { R3xAppState.open_modal("manual_profile"); }
+                }
+            }
+        }
+
+        // Search & Filter Bar
+        HorizontalLayout {
+            spacing: R3xMetrics.space_md;
+
+            R3xTextField {
+                horizontal_stretch: 1;
+                placeholder: R3xAppState.is_ru ? "Поиск по имени, протоколу или хосту..." : "Search by name, protocol, or server...";
+                text <=> R3xAppState.server_search_query;
+                edited(q) => { R3xAppState.set_server_filter(q, R3xAppState.server_filter_favorites); }
+            }
+
+            VerticalLayout {
+                alignment: center;
+                HorizontalLayout {
+                    spacing: R3xMetrics.space_xs;
+                    R3xFilterChip {
+                        label: R3xAppState.is_ru ? "Все" : "All";
+                        selected: !R3xAppState.server_filter_favorites;
+                        clicked => {
+                            R3xAppState.server_filter_favorites = false;
+                            R3xAppState.set_server_filter(R3xAppState.server_search_query, false);
+                        }
+                    }
+                    R3xFilterChip {
+                        label: R3xAppState.is_ru ? "Избранное" : "Favorites";
+                        selected: R3xAppState.server_filter_favorites;
+                        clicked => {
+                            R3xAppState.server_filter_favorites = true;
+                            R3xAppState.set_server_filter(R3xAppState.server_search_query, true);
+                        }
+                    }
+                }
+            }
+        }
+
+        if R3xAppState.profiles.length == 0 : EmptyStateView {
+            icon: R3xIcons.public;
+            title: R3xAppState.is_ru ? "Серверы не найдены" : "No servers available";
+            description: R3xAppState.is_ru
+                ? "Добавьте подписку или импортируйте конфиг по ссылке / файлу."
+                : "Add a subscription feed, import a URI, or create a manual profile to populate your server list.";
+            action_label: R3xAppState.is_ru ? "Импорт URI" : "Import URI / Config";
+            action_clicked => { R3xAppState.open_modal("import_uri"); }
+        }
+
+        if R3xAppState.profiles.length > 0 : HorizontalLayout {
+            spacing: R3xMetrics.space_lg;
+
+            // Server List Column
+            VerticalLayout {
+                horizontal_stretch: 7;
+                spacing: R3xMetrics.space_xs;
+
+                for prof[idx] in R3xAppState.profiles : StackedListItem {
+                    position: R3xAppState.profiles.length == 1 ? StackPosition.only
+                        : idx == 0 ? StackPosition.first
+                        : idx == R3xAppState.profiles.length - 1 ? StackPosition.last
+                        : StackPosition.middle;
+                    selected: prof.is_selected;
+                    clicked => { R3xAppState.select_profile(prof.id); }
+
+                    HorizontalLayout {
+                        horizontal_stretch: 1;
+                        alignment: space_between;
+                        spacing: R3xMetrics.space_md;
+
+                        HorizontalLayout {
+                            spacing: R3xMetrics.space_md;
+                            horizontal_stretch: 1;
+
+                            VerticalLayout {
+                                alignment: center;
+                                Rectangle {
+                                    width: 30px;
+                                    height: 20px;
+                                    border_radius: 5px;
+                                    clip: true;
+                                    Image {
+                                        width: 100%;
+                                        height: 100%;
+                                        source: R3xFlags.by_code(prof.country_code);
+                                    }
+                                }
+                            }
+
+                            VerticalLayout {
+                                alignment: center;
+                                spacing: 2px;
+                                horizontal_stretch: 1;
+
+                                MaterialText {
+                                    text: prof.name;
+                                    style: R3xTypography.title_md;
+                                    color: R3xPalette.on_surface;
+                                }
+                                MaterialText {
+                                    text: prof.server_display;
+                                    style: R3xTypography.mono_sm;
+                                    color: R3xPalette.on_surface_variant;
+                                }
+                            }
+                        }
+
+                        HorizontalLayout {
+                            spacing: R3xMetrics.space_sm;
+
+                            VerticalLayout {
+                                alignment: center;
+                                CompactTag {
+                                    text: prof.protocol;
+                                    tone: StatusTone.primary;
+                                }
+                            }
+
+                            MaterialText {
+                                text: prof.latency_text;
+                                style: R3xTypography.label_large;
+                                color: prof.latency_ms < 0 ? R3xPalette.on_surface_variant
+                                    : prof.latency_ms <= 120 ? R3xPalette.success
+                                    : prof.latency_ms <= 250 ? R3xPalette.warning
+                                    : R3xPalette.error;
+                                vertical_alignment: center;
+                            }
+
+                            IconButton {
+                                icon: R3xIcons.star;
+                                tooltip: prof.is_favorite ? "Unfavorite" : "Favorite";
+                                has_error: false;
+                                checked: prof.is_favorite;
+                                clicked => { R3xAppState.toggle_favorite_profile(prof.id); }
+                            }
+
+                            IconButton {
+                                icon: R3xIcons.delete;
+                                tooltip: "Delete profile";
+                                clicked => { R3xAppState.delete_profile(prof.id); }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Selected Server Details Panel (Desktop)
+            if root.is_desktop && R3xAppState.has_selected_server : ExpressiveCard {
+                horizontal_stretch: 4;
+                tier: SurfaceTier.high;
+                corner_radius: R3xMetrics.radius_hero;
+                content_padding: R3xMetrics.space_xl;
+
+                VerticalLayout {
+                    spacing: R3xMetrics.space_md;
+
+                    MaterialText {
+                        text: R3xAppState.server_name;
+                        style: R3xTypography.title_large;
+                        color: R3xPalette.on_surface;
+                        wrap: word_wrap;
+                    }
+                    R3xKeyValueRow { label: "Protocol"; value: R3xAppState.selected_server_protocol; }
+                    R3xKeyValueRow { label: "Transport"; value: R3xAppState.selected_server_transport; }
+                    R3xKeyValueRow { label: "Security"; value: R3xAppState.selected_server_security; }
+                    R3xKeyValueRow { label: "Latency"; value: R3xAppState.server_latency; }
+
+                    HorizontalLayout {
+                        spacing: R3xMetrics.space_sm;
+                        FilledButton {
+                            text: R3xAppState.is_ru ? "Подключить" : "Connect now";
+                            icon: R3xIcons.power_settings_new;
+                            clicked => { R3xAppState.hero_action_clicked(); }
+                        }
+                        OutlineButton {
+                            text: R3xAppState.is_ru ? "Экспорт URI" : "Export URI";
+                            icon: R3xIcons.content_copy;
+                            clicked => { R3xAppState.export_profile_uri(R3xAppState.selected_profile_id); }
+                        }
+                    }
+
+                    if R3xAppState.exported_uri_preview != "" : MaterialText {
+                        text: R3xAppState.exported_uri_preview;
+                        style: R3xTypography.mono_sm;
+                        color: R3xPalette.on_surface_variant;
+                        wrap: word_wrap;
+                    }
+                }
+            }
+        }
+    }
+}

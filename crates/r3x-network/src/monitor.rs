@@ -9,6 +9,7 @@ pub struct NetworkInterfaceInfo {
     pub mac_address: String,
     pub total_received_bytes: u64,
     pub total_transmitted_bytes: u64,
+    pub ip_networks: Vec<String>,
 }
 
 #[must_use]
@@ -44,6 +45,57 @@ pub fn list_network_interfaces() -> Vec<NetworkInterfaceInfo> {
             mac_address: data.mac_address().to_string(),
             total_received_bytes: data.total_received(),
             total_transmitted_bytes: data.total_transmitted(),
+            ip_networks: data.ip_networks().iter().map(ToString::to_string).collect(),
         })
         .collect()
+}
+
+/// Inspect active OS DNS nameservers using platform native configuration sources.
+#[must_use]
+pub fn inspect_os_dns_servers() -> Vec<String> {
+    let mut servers = Vec::new();
+    #[cfg(target_os = "windows")]
+    {
+        use winreg::RegKey;
+        use winreg::enums::{HKEY_LOCAL_MACHINE, KEY_READ};
+
+        let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
+        for sub in [
+            "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces",
+            "SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters\\Interfaces",
+        ] {
+            if let Ok(root) = hklm.open_subkey_with_flags(sub, KEY_READ) {
+                for iface_name in root.enum_keys().flatten() {
+                    if let Ok(iface) = root.open_subkey_with_flags(&iface_name, KEY_READ) {
+                        for val_name in ["NameServer", "DhcpNameServer"] {
+                            if let Ok(raw) = iface.get_value::<String, _>(val_name) {
+                                for token in raw.split([',', ' ', ';']) {
+                                    let trimmed = token.trim();
+                                    if !trimmed.is_empty() && !servers.iter().any(|s| s == trimmed)
+                                    {
+                                        servers.push(trimmed.to_owned());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    #[cfg(target_os = "linux")]
+    {
+        if let Ok(contents) = std::fs::read_to_string("/etc/resolv.conf") {
+            for line in contents.lines() {
+                let trimmed = line.trim();
+                if let Some(rest) = trimmed.strip_prefix("nameserver") {
+                    let addr = rest.trim();
+                    if !addr.is_empty() && !servers.iter().any(|s| s == addr) {
+                        servers.push(addr.to_owned());
+                    }
+                }
+            }
+        }
+    }
+    servers
 }

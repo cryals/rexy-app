@@ -1,0 +1,215 @@
+import { FilledButton, MaterialText, OutlineButton, TextButton } from "@material";
+import { R3xPalette } from "../tokens/palette.slint";
+import { R3xMetrics } from "../tokens/metrics.slint";
+import { R3xTypography } from "../tokens/typography.slint";
+import { R3xIcons } from "../tokens/icons.slint";
+import { R3xAppState } from "../state/app_state.slint";
+import { ExpressiveCard, SurfaceTier } from "../components/expressive_card.slint";
+import { ConnectedSegmentedGroup } from "../components/connected_button_group.slint";
+import { StatusPill, StatusTone } from "../components/status_badge.slint";
+import { R3xKeyValueRow } from "../components/input_fields.slint";
+
+export component OnboardingScreen {
+    in property <bool> is_desktop: true;
+
+    VerticalLayout {
+        width: 100%;
+        height: 100%;
+        alignment: center;
+        padding: root.is_desktop ? R3xMetrics.space_2xl : R3xMetrics.space_lg;
+
+        HorizontalLayout {
+            alignment: center;
+
+            ExpressiveCard {
+                width: min(parent.width, 680px);
+                tier: SurfaceTier.high;
+                corner_radius: R3xMetrics.radius_2xl;
+                content_padding: root.is_desktop ? R3xMetrics.space_2xl : R3xMetrics.space_xl;
+
+                VerticalLayout {
+                    spacing: R3xMetrics.space_xl;
+
+                    // Header + skip button
+                    HorizontalLayout {
+                        alignment: space_between;
+                        HorizontalLayout {
+                            spacing: R3xMetrics.space_sm;
+                            Image {
+                                width: 28px;
+                                height: 28px;
+                                source: R3xIcons.verified_user;
+                                colorize: R3xPalette.primary;
+                            }
+                            MaterialText {
+                                text: "R3X · Rexy";
+                                style: R3xTypography.title_large;
+                                color: R3xPalette.on_surface;
+                                vertical_alignment: center;
+                            }
+                        }
+
+                        TextButton {
+                            text: R3xAppState.is_ru ? "Пропустить" : "Skip setup";
+                            clicked => { R3xAppState.skip_onboarding(); }
+                        }
+                    }
+
+                    // Step indicator dots (steps 0..=3)
+                    HorizontalLayout {
+                        spacing: R3xMetrics.space_sm;
+                        for idx in [0, 1, 2, 3] : Rectangle {
+                            width: idx == R3xAppState.onboarding_step ? 32px : 10px;
+                            height: 10px;
+                            border_radius: 5px;
+                            background: idx == R3xAppState.onboarding_step ? R3xPalette.primary : R3xPalette.surface_container_highest;
+                        }
+                    }
+
+                    if R3xAppState.onboarding_step == 0 : VerticalLayout {
+                        spacing: R3xMetrics.space_md;
+                        MaterialText {
+                            text: R3xAppState.is_ru ? "Добро пожаловать в R3X" : "Welcome to R3X";
+                            style: R3xTypography.headline_lg;
+                            color: R3xPalette.on_surface;
+                        }
+                        MaterialText {
+                            text: "Many cores. One experience. — Rust-powered Expressive Proxy";
+                            style: R3xTypography.title_md;
+                            color: R3xPalette.primary;
+                        }
+                        MaterialText {
+                            text: R3xAppState.is_ru
+                                ? "Единый нативный клиент для Xray-core, sing-box, Mihomo, AmneziaWG, Hysteria 2, Mieru и WireGuard без встроенной рекламы и слежки."
+                                : "Unified native multi-core VPN & Proxy client supporting Xray-core, sing-box, Mihomo, AmneziaWG, Hysteria 2, Mieru, and WireGuard without telemetry or ads.";
+                            style: R3xTypography.body_large;
+                            color: R3xPalette.on_surface_variant;
+                            wrap: word_wrap;
+                        }
+                        StatusPill {
+                            label: R3xAppState.is_ru ? "100% локальное хранение ключей" : "Zero telemetry · Local-first secrets";
+                            tone: StatusTone.success;
+                        }
+                    }
+
+                    if R3xAppState.onboarding_step == 1 : VerticalLayout {
+                        spacing: R3xMetrics.space_md;
+                        MaterialText {
+                            text: R3xAppState.is_ru ? "Язык и тема оформления" : "Appearance & Language";
+                            style: R3xTypography.headline_md;
+                            color: R3xPalette.on_surface;
+                        }
+                        MaterialText {
+                            text: R3xAppState.is_ru ? "Выберите язык интерфейса:" : "Interface language:";
+                            style: R3xTypography.body_md;
+                            color: R3xPalette.on_surface_variant;
+                        }
+                        ConnectedSegmentedGroup {
+                            items: [
+                                { id: "en", label: "English", enabled: true, disabled_reason: "" },
+                                { id: "ru", label: "Русский", enabled: true, disabled_reason: "" },
+                            ];
+                            current_index <=> R3xAppState.language_index;
+                            selected(idx, _id) => { R3xAppState.language_selected(idx); }
+                        }
+                        MaterialText {
+                            text: R3xAppState.is_ru ? "Палитра Material 3 Expressive:" : "Material 3 Expressive palette:";
+                            style: R3xTypography.body_md;
+                            color: R3xPalette.on_surface_variant;
+                        }
+                        ConnectedSegmentedGroup {
+                            items: [
+                                { id: "sys", label: "System", enabled: true, disabled_reason: "" },
+                                { id: "light", label: "Light", enabled: true, disabled_reason: "" },
+                                { id: "dark", label: "Dark", enabled: true, disabled_reason: "" },
+                                { id: "amoled", label: "AMOLED", enabled: true, disabled_reason: "" },
+                            ];
+                            current_index <=> R3xAppState.theme_mode_index;
+                            selected(idx, _id) => { R3xAppState.theme_selected(idx); }
+                        }
+                    }
+
+                    if R3xAppState.onboarding_step == 2 : VerticalLayout {
+                        spacing: R3xMetrics.space_md;
+                        MaterialText {
+                            text: R3xAppState.is_ru ? "Безопасность и режимы сети" : "Security & Network Capabilities";
+                            style: R3xTypography.headline_md;
+                            color: R3xPalette.on_surface;
+                        }
+                        ExpressiveCard {
+                            tier: SurfaceTier.low;
+                            corner_radius: R3xMetrics.radius_xl;
+                            content_padding: R3xMetrics.space_lg;
+                            VerticalLayout {
+                                spacing: R3xMetrics.space_sm;
+                                R3xKeyValueRow { label: "Secret Storage"; value: R3xAppState.secret_store_status; }
+                                R3xKeyValueRow { label: "TLS / Verification"; value: "rustls + OS platform roots"; }
+                                R3xKeyValueRow { label: "Proxy Modes"; value: "System Proxy / Mixed / TUN"; }
+                                R3xKeyValueRow { label: "Installed Cores"; value: R3xAppState.active_core_subtitle; }
+                            }
+                        }
+                    }
+
+                    if R3xAppState.onboarding_step == 3 : VerticalLayout {
+                        spacing: R3xMetrics.space_md;
+                        MaterialText {
+                            text: R3xAppState.is_ru ? "Готово к подключению" : "Ready for your first connection";
+                            style: R3xTypography.headline_md;
+                            color: R3xPalette.on_surface;
+                        }
+                        MaterialText {
+                            text: R3xAppState.is_ru
+                                ? "Импортируйте ссылку конфигурации (vless://, hy2://, wg://, ss://) или добавьте подписку сразу, либо откройте главный экран."
+                                : "Import a configuration URI (vless://, hy2://, wg://, ss://) or add a subscription feed now, or jump directly into R3X.";
+                            style: R3xTypography.body_md;
+                            color: R3xPalette.on_surface_variant;
+                            wrap: word_wrap;
+                        }
+                        HorizontalLayout {
+                            spacing: R3xMetrics.space_sm;
+                            OutlineButton {
+                                text: R3xAppState.is_ru ? "Импорт URI" : "Import URI / Config";
+                                icon: R3xIcons.qr_code_scanner;
+                                clicked => {
+                                    R3xAppState.complete_onboarding();
+                                    R3xAppState.open_modal("import_uri");
+                                }
+                            }
+                            OutlineButton {
+                                text: R3xAppState.is_ru ? "Добавить подписку" : "Add Subscription";
+                                icon: R3xIcons.link;
+                                clicked => {
+                                    R3xAppState.complete_onboarding();
+                                    R3xAppState.open_modal("add_subscription");
+                                }
+                            }
+                        }
+                    }
+
+                    // Footer step controls
+                    HorizontalLayout {
+                        alignment: space_between;
+
+                        if R3xAppState.onboarding_step > 0 : OutlineButton {
+                            text: R3xAppState.is_ru ? "Назад" : "Back";
+                            icon: R3xIcons.arrow_back;
+                            clicked => { R3xAppState.onboarding_step -= 1; }
+                        }
+                        if R3xAppState.onboarding_step == 0 : Rectangle {}
+
+                        if R3xAppState.onboarding_step < 3 : FilledButton {
+                            text: R3xAppState.is_ru ? "Далее" : "Continue";
+                            icon: R3xIcons.arrow_forward;
+                            clicked => { R3xAppState.onboarding_step += 1; }
+                        }
+                        if R3xAppState.onboarding_step == 3 : FilledButton {
+                            text: R3xAppState.is_ru ? "Начать работу" : "Launch R3X";
+                            icon: R3xIcons.check;
+                            clicked => { R3xAppState.complete_onboarding(); }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -6,7 +6,8 @@ pub mod tun;
 
 pub use kill_switch::KillSwitchManager;
 pub use monitor::{
-    NetworkInterfaceInfo, find_free_local_port, is_local_port_available, list_network_interfaces,
+    NetworkInterfaceInfo, find_free_local_port, inspect_os_dns_servers, is_local_port_available,
+    list_network_interfaces,
 };
 pub use proxy::{
     SystemProxyBackend, SystemProxyManager, SystemProxySnapshot, create_platform_proxy_backend,

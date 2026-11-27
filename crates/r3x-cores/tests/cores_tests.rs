@@ -1,12 +1,15 @@
 use chrono::Utc;
 use r3x_cores::{
-    CoreManager, MihomoAdapter, SingBoxAdapter, SupervisedProcess, XrayAdapter,
-    default_core_manifests, probe_tcp_ready,
+    AmneziaWgAdapter, BrookAdapter, CoreManager, ExternalCliVpnAdapter, Hysteria2Adapter,
+    JuicityAdapter, MieruAdapter, MihomoAdapter, NaiveProxyAdapter, OpenVpnAdapter,
+    ShadowsocksRustAdapter, SingBoxAdapter, SupervisedProcess, TorAdapter, V2FlyAdapter,
+    WireGuardAdapter, XrayAdapter, create_all_adapters, default_core_manifests, probe_tcp_ready,
 };
 use r3x_domain::{
-    AuthConfig, ConnectionMode, CoreId, CorePreference, DnsConfig, Endpoint, LogEntry, Profile,
-    ProfileOptions, ProfileSource, ProtocolConfig, ProtocolType, RealitySettings, RedactedSecret,
-    RoutingRule, RuleAction, RuleMatcher, SecurityConfig, TransportConfig,
+    AmneziaWgObfuscation, AuthConfig, ConnectionMode, CoreId, CorePreference, DnsConfig, Endpoint,
+    LogEntry, Profile, ProfileOptions, ProfileSource, ProtocolConfig, ProtocolType,
+    RealitySettings, RedactedSecret, RoutingRule, RuleAction, RuleMatcher, SecurityConfig,
+    TransportConfig,
 };
 use r3x_engine::{CoreAdapter, CoreConfigContext};
 use r3x_security::compute_sha256_bytes;
@@ -84,6 +87,20 @@ fn sample_vless_reality() -> Profile {
         created_at: now,
         updated_at: now,
     }
+}
+
+fn sample_profile(
+    protocol_type: ProtocolType,
+    transport: TransportConfig,
+    security: SecurityConfig,
+) -> Profile {
+    let mut p = sample_vless_reality();
+    p.name = format!("{protocol_type:?} Test");
+    p.protocol = ProtocolConfig::simple(protocol_type);
+    p.transport = transport;
+    p.security = security;
+    p.flow = None;
+    p
 }
 
 #[test]
@@ -236,4 +253,230 @@ async fn supervised_process_spawns_real_listener_streams_logs_and_terminates() {
     proc_handle.terminate().expect("terminate");
     tokio::time::sleep(Duration::from_millis(100)).await;
     assert!(!proc_handle.is_alive());
+}
+
+#[tokio::test]
+async fn extended_core_adapters_generate_valid_configs_for_all_protocols() {
+    let dir = tempdir().expect("tempdir");
+    let mgr = CoreManager::new(dir.path().join("cores"), None);
+    let all = create_all_adapters(&mgr);
+    assert_eq!(all.len(), 19);
+
+    let hy2_prof = sample_profile(
+        ProtocolType::Hysteria2,
+        TransportConfig::Quic {
+            security: None,
+            header_type: None,
+        },
+        SecurityConfig::None,
+    );
+    let hy2 = Hysteria2Adapter::new(None);
+    let hy2_cfg = hy2
+        .generate_config(&sample_ctx(
+            hy2_prof,
+            ConnectionMode::SystemProxy,
+            &dir.path().join("hy2"),
+        ))
+        .await
+        .expect("hy2 cfg");
+    assert!(hy2_cfg.config_contents.contains("socks5:"));
+
+    let mut awg_prof = sample_profile(
+        ProtocolType::AmneziaWg,
+        TransportConfig::UdpRaw,
+        SecurityConfig::AmneziaWg(AmneziaWgObfuscation {
+            version: "1.5".to_owned(),
+            jc: 5,
+            jmin: 40,
+            jmax: 80,
+            s1: 12,
+            s2: 24,
+            s3: None,
+            s4: None,
+            h1: 1001,
+            h2: 1002,
+            h3: 1003,
+            h4: 1004,
+            special_junk: vec!["<b 0xdeadbeef>".to_owned()],
+        }),
+    );
+    awg_prof.auth.public_key = Some("PeerPubKey123456".to_owned());
+    let awg = AmneziaWgAdapter::amneziawg(None);
+    let awg_cfg = awg
+        .generate_config(&sample_ctx(
+            awg_prof.clone(),
+            ConnectionMode::Tun,
+            &dir.path().join("awg"),
+        ))
+        .await
+        .expect("awg cfg");
+    assert!(awg_cfg.config_contents.contains("Jc = 5"));
+    assert!(awg_cfg.config_contents.contains("H1 = 1001"));
+    assert!(awg_cfg.config_contents.contains("I1 = <b 0xdeadbeef>"));
+
+    let mut wg_prof = sample_profile(
+        ProtocolType::WireGuard,
+        TransportConfig::UdpRaw,
+        SecurityConfig::NoiseWg,
+    );
+    wg_prof.auth.public_key = Some("PeerPubKey123456".to_owned());
+    let wg = WireGuardAdapter::wireguard(None);
+    assert!(wg.supports_profile(&wg_prof).is_runnable());
+    let wg_cfg = wg
+        .generate_config(&sample_ctx(
+            wg_prof,
+            ConnectionMode::Tun,
+            &dir.path().join("wg"),
+        ))
+        .await
+        .expect("wg cfg");
+    assert!(wg_cfg.config_contents.contains("[Interface]"));
+
+    let naive = NaiveProxyAdapter::new(None);
+    let n_prof = sample_profile(
+        ProtocolType::NaiveProxy,
+        TransportConfig::Http2 {
+            path: "/".to_owned(),
+            hosts: vec![],
+        },
+        SecurityConfig::None,
+    );
+    let n_cfg = naive
+        .generate_config(&sample_ctx(
+            n_prof,
+            ConnectionMode::SystemProxy,
+            &dir.path().join("naive"),
+        ))
+        .await
+        .expect("naive");
+    assert!(n_cfg.config_contents.contains("socks://"));
+
+    let mieru = MieruAdapter::new(None);
+    let m_prof = sample_profile(
+        ProtocolType::Mieru,
+        TransportConfig::RawTcp { header_type: None },
+        SecurityConfig::None,
+    );
+    let m_cfg = mieru
+        .generate_config(&sample_ctx(
+            m_prof,
+            ConnectionMode::SystemProxy,
+            &dir.path().join("mieru"),
+        ))
+        .await
+        .expect("mieru");
+    assert!(m_cfg.config_contents.contains("activeProfile"));
+
+    let ovpn = OpenVpnAdapter::new(None);
+    let o_prof = sample_profile(
+        ProtocolType::OpenVpnUdp,
+        TransportConfig::UdpRaw,
+        SecurityConfig::None,
+    );
+    let o_cfg = ovpn
+        .generate_config(&sample_ctx(
+            o_prof,
+            ConnectionMode::Tun,
+            &dir.path().join("ovpn"),
+        ))
+        .await
+        .expect("ovpn");
+    assert!(o_cfg.config_contents.contains("dev tun"));
+
+    let ss_rust = ShadowsocksRustAdapter::new(None);
+    let ss_prof = sample_profile(
+        ProtocolType::Shadowsocks2022,
+        TransportConfig::RawTcp { header_type: None },
+        SecurityConfig::None,
+    );
+    assert!(
+        ss_rust
+            .generate_config(&sample_ctx(
+                ss_prof,
+                ConnectionMode::SystemProxy,
+                &dir.path().join("ss")
+            ))
+            .await
+            .is_ok()
+    );
+
+    let v2 = V2FlyAdapter::new(None);
+    let v_prof = sample_profile(
+        ProtocolType::Vless,
+        TransportConfig::RawTcp { header_type: None },
+        SecurityConfig::None,
+    );
+    assert!(v2.supports_profile(&v_prof).is_runnable());
+
+    let ju = JuicityAdapter::new(None);
+    let j_prof = sample_profile(
+        ProtocolType::Juicity,
+        TransportConfig::Quic {
+            security: None,
+            header_type: None,
+        },
+        SecurityConfig::None,
+    );
+    assert!(
+        ju.generate_config(&sample_ctx(
+            j_prof,
+            ConnectionMode::SystemProxy,
+            &dir.path().join("juicity")
+        ))
+        .await
+        .is_ok()
+    );
+
+    let br = BrookAdapter::new(None);
+    let b_prof = sample_profile(
+        ProtocolType::Brook,
+        TransportConfig::RawTcp { header_type: None },
+        SecurityConfig::None,
+    );
+    assert!(
+        br.generate_config(&sample_ctx(
+            b_prof,
+            ConnectionMode::SystemProxy,
+            &dir.path().join("brook")
+        ))
+        .await
+        .is_ok()
+    );
+
+    let mut t_prof = sample_profile(
+        ProtocolType::Socks5,
+        TransportConfig::RawTcp { header_type: None },
+        SecurityConfig::None,
+    );
+    t_prof
+        .options
+        .raw_extra
+        .insert("tor".to_owned(), "true".to_owned());
+    let tor = TorAdapter::new(None);
+    assert!(tor.supports_profile(&t_prof).is_runnable());
+    let tor_cfg = tor
+        .generate_config(&sample_ctx(
+            t_prof,
+            ConnectionMode::SystemProxy,
+            &dir.path().join("tor"),
+        ))
+        .await
+        .expect("tor");
+    assert!(tor_cfg.config_contents.contains("SocksPort"));
+
+    let oc = ExternalCliVpnAdapter::openconnect(None);
+    let oc_prof = sample_profile(
+        ProtocolType::OpenConnect,
+        TransportConfig::RawTcp { header_type: None },
+        SecurityConfig::None,
+    );
+    assert!(
+        oc.generate_config(&sample_ctx(
+            oc_prof,
+            ConnectionMode::Tun,
+            &dir.path().join("oc")
+        ))
+        .await
+        .is_ok()
+    );
 }

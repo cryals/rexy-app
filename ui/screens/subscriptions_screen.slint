@@ -1,0 +1,217 @@
+import { FilledButton, LinearProgressIndicator, MaterialText, OutlineButton } from "@material";
+import { R3xPalette } from "../tokens/palette.slint";
+import { R3xMetrics } from "../tokens/metrics.slint";
+import { R3xTypography } from "../tokens/typography.slint";
+import { R3xIcons } from "../tokens/icons.slint";
+import { R3xAppState } from "../state/app_state.slint";
+import { ExpressiveCard, SurfaceTier } from "../components/expressive_card.slint";
+import { ConnectedGroupButton, GroupPosition } from "../components/connected_button_group.slint";
+import { StatusPill, StatusTone } from "../components/status_badge.slint";
+import { EmptyStateView } from "../components/empty_error_state.slint";
+
+export component SubscriptionsScreen {
+    in property <bool> is_desktop: true;
+
+    VerticalLayout {
+        spacing: R3xMetrics.space_lg;
+
+        // Top Header + Primary Actions
+        HorizontalLayout {
+            alignment: space_between;
+            spacing: R3xMetrics.space_md;
+
+            VerticalLayout {
+                spacing: 2px;
+                MaterialText {
+                    text: R3xAppState.is_ru ? "Подписки и импорт" : "Subscriptions & Feeds";
+                    style: R3xTypography.headline_md;
+                    color: R3xPalette.on_surface;
+                }
+                MaterialText {
+                    text: R3xAppState.is_ru
+                        ? "Управление источниками профилей, квотой и ручным импортом"
+                        : "Manage provider feeds, usage quotas, and URI/YAML/JSON imports";
+                    style: R3xTypography.body_md;
+                    color: R3xPalette.on_surface_variant;
+                }
+            }
+
+            HorizontalLayout {
+                spacing: R3xMetrics.space_sm;
+                OutlineButton {
+                    text: R3xAppState.is_ru ? "Импорт URI" : "Import URI";
+                    icon: R3xIcons.qr_code_scanner;
+                    clicked => { R3xAppState.open_modal("import_uri"); }
+                }
+                FilledButton {
+                    text: R3xAppState.is_ru ? "Добавить подписку" : "Add subscription";
+                    icon: R3xIcons.add;
+                    clicked => { R3xAppState.open_modal("add_subscription"); }
+                }
+            }
+        }
+
+        // Connected 4-Button Utility Bar
+        HorizontalLayout {
+            spacing: R3xMetrics.space_xs;
+
+            ConnectedGroupButton {
+                horizontal_stretch: 1;
+                position: GroupPosition.first;
+                icon: R3xIcons.refresh;
+                label: R3xAppState.is_ru ? "Обновить все" : "Refresh all";
+                tooltip: "Refresh all enabled feeds";
+                emphasized: true;
+                clicked => { R3xAppState.refresh_all_subscriptions(); }
+            }
+            ConnectedGroupButton {
+                horizontal_stretch: 1;
+                position: GroupPosition.middle;
+                icon: R3xIcons.link;
+                label: R3xAppState.is_ru ? "Подписка" : "New feed";
+                tooltip: "Add HTTPS subscription feed";
+                clicked => { R3xAppState.open_modal("add_subscription"); }
+            }
+            ConnectedGroupButton {
+                horizontal_stretch: 1;
+                position: GroupPosition.middle;
+                icon: R3xIcons.edit;
+                label: R3xAppState.is_ru ? "Вручную" : "Manual";
+                tooltip: "Create manual server profile";
+                clicked => { R3xAppState.open_modal("manual_profile"); }
+            }
+            ConnectedGroupButton {
+                horizontal_stretch: 1;
+                position: GroupPosition.last;
+                icon: R3xIcons.dns;
+                label: R3xAppState.is_ru ? "Все серверы" : "All servers";
+                tooltip: "Open Server Directory";
+                clicked => { R3xAppState.nav_selected(2); }
+            }
+        }
+
+        if R3xAppState.subscriptions.length == 0 : EmptyStateView {
+            icon: R3xIcons.dns;
+            title: R3xAppState.is_ru ? "Подписок пока нет" : "No subscriptions added yet";
+            description: R3xAppState.is_ru
+                ? "Добавьте HTTPS-подписку провайдера или импортируйте конфиг напрямую (VLESS, VMess, Trojan, Hy2, WireGuard, AmneziaWG)."
+                : "Add an HTTPS subscription URL or import configurations directly (VLESS, VMess, Trojan, Hysteria 2, WireGuard, AmneziaWG).";
+            action_label: R3xAppState.is_ru ? "Добавить подписку" : "Add subscription";
+            action_clicked => { R3xAppState.open_modal("add_subscription"); }
+        }
+
+        if R3xAppState.subscriptions.length > 0 : VerticalLayout {
+            spacing: R3xMetrics.space_md;
+
+            for sub in R3xAppState.subscriptions : ExpressiveCard {
+                tier: sub.id == R3xAppState.selected_subscription_id ? SurfaceTier.high : SurfaceTier.standard;
+                corner_radius: R3xMetrics.radius_hero;
+                content_padding: R3xMetrics.space_lg;
+
+                VerticalLayout {
+                    spacing: R3xMetrics.space_md;
+
+                    HorizontalLayout {
+                        alignment: space_between;
+                        spacing: R3xMetrics.space_md;
+
+                        VerticalLayout {
+                            spacing: 2px;
+                            horizontal_stretch: 1;
+                            MaterialText {
+                                text: sub.name;
+                                style: R3xTypography.title_large;
+                                color: R3xPalette.on_surface;
+                            }
+                            MaterialText {
+                                text: sub.url_masked;
+                                style: R3xTypography.mono_sm;
+                                color: R3xPalette.on_surface_variant;
+                            }
+                        }
+
+                        StatusPill {
+                            label: sub.status_text;
+                            tone: sub.is_error ? StatusTone.error : StatusTone.success;
+                        }
+                    }
+
+                    // Quota visualization (Unlimited vs Metered)
+                    if sub.is_unlimited : HorizontalLayout {
+                        alignment: space_between;
+                        MaterialText {
+                            text: R3xAppState.is_ru ? ("Использовано: " + sub.used_text + " · Безлимитный план") : ("Used: " + sub.used_text + " · Unlimited plan");
+                            style: R3xTypography.body_md;
+                            color: R3xPalette.on_surface_variant;
+                        }
+                        MaterialText {
+                            text: sub.expires_text;
+                            style: R3xTypography.label_medium;
+                            color: R3xPalette.on_surface_variant;
+                        }
+                    }
+
+                    if !sub.is_unlimited : VerticalLayout {
+                        spacing: 6px;
+                        HorizontalLayout {
+                            alignment: space_between;
+                            MaterialText {
+                                text: sub.used_text + " / " + sub.total_text;
+                                style: R3xTypography.label_large;
+                                color: R3xPalette.on_surface;
+                            }
+                            MaterialText {
+                                text: sub.expires_text;
+                                style: R3xTypography.label_medium;
+                                color: R3xPalette.on_surface_variant;
+                            }
+                        }
+                        LinearProgressIndicator {
+                            progress: sub.usage_ratio;
+                            indeterminate: false;
+                        }
+                    }
+
+                    HorizontalLayout {
+                        alignment: space_between;
+                        MaterialText {
+                            text: (R3xAppState.is_ru ? "Серверов: " : "Servers: ") + sub.profile_count + " · " + sub.last_updated;
+                            style: R3xTypography.body_sm;
+                            color: R3xPalette.on_surface_variant;
+                            vertical_alignment: center;
+                        }
+
+                        HorizontalLayout {
+                            spacing: R3xMetrics.space_xs;
+
+                            ConnectedGroupButton {
+                                position: GroupPosition.first;
+                                icon: R3xIcons.refresh;
+                                label: R3xAppState.is_ru ? "Обновить" : "Refresh";
+                                tooltip: "Refresh subscription feed";
+                                clicked => { R3xAppState.refresh_subscription(sub.id); }
+                            }
+                            ConnectedGroupButton {
+                                position: GroupPosition.middle;
+                                icon: R3xIcons.public;
+                                label: R3xAppState.is_ru ? "Узлы" : "Servers";
+                                tooltip: "Inspect servers from this feed";
+                                clicked => {
+                                    R3xAppState.select_subscription(sub.id);
+                                    R3xAppState.nav_selected(2);
+                                }
+                            }
+                            ConnectedGroupButton {
+                                position: GroupPosition.last;
+                                icon: R3xIcons.delete;
+                                label: "";
+                                tooltip: "Delete subscription";
+                                clicked => { R3xAppState.delete_subscription(sub.id); }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

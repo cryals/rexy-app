@@ -4523,16 +4523,26 @@ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 name = "r3x-app"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "i-slint-backend-testing",
+ "ipnet",
  "r3x-cores",
+ "r3x-diagnostics",
  "r3x-domain",
  "r3x-engine",
+ "r3x-network",
+ "r3x-profiles",
+ "r3x-security",
  "r3x-storage",
+ "rustls",
+ "serde_json",
  "slint",
  "slint-build",
  "tempfile",
+ "tokio",
  "tracing",
  "tracing-subscriber",
+ "uuid",
 ]
 
 [[package]]
@@ -4592,6 +4602,28 @@ dependencies = [
  "tokio-util",
  "tracing",
  "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
+name = "r3x-diagnostics"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "parking_lot 0.13.0",
+ "r3x-domain",
+ "r3x-engine",
+ "r3x-network",
+ "r3x-security",
+ "r3x-storage",
+ "reqwest",
+ "rustls",
+ "serde",
+ "serde_json",
+ "sysinfo",
+ "tempfile",
+ "tokio",
+ "tracing",
  "uuid",
 ]
 

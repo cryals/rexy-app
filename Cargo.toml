@@ -10,6 +10,7 @@ members = [
     "crates/r3x-profiles",
     "crates/r3x-cores",
     "crates/r3x-network",
+    "crates/r3x-diagnostics",
     "apps/r3x-daemon",
     "apps/r3x-cli",
 ]
@@ -70,6 +71,7 @@ r3x-engine = { path = "crates/r3x-engine" }
 r3x-profiles = { path = "crates/r3x-profiles" }
 r3x-cores = { path = "crates/r3x-cores" }
 r3x-network = { path = "crates/r3x-network" }
+r3x-diagnostics = { path = "crates/r3x-diagnostics" }
 
 [package]
 name = "r3x-app"
@@ -90,13 +92,23 @@ path = "src/main.rs"
 name = "r3x-app"
 
 [dependencies]
+chrono.workspace = true
+ipnet.workspace = true
 r3x-cores.workspace = true
+r3x-diagnostics.workspace = true
 r3x-domain.workspace = true
 r3x-engine.workspace = true
+r3x-network.workspace = true
+r3x-profiles.workspace = true
+r3x-security.workspace = true
 r3x-storage.workspace = true
+rustls.workspace = true
+serde_json.workspace = true
 slint.workspace = true
+tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
+uuid.workspace = true
 
 [build-dependencies]
 slint-build.workspace = true

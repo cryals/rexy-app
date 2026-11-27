@@ -1,0 +1,90 @@
+import { IconButton, MaterialText, ScrollView } from "@material";
+import { R3xPalette } from "../tokens/palette.slint";
+import { R3xMetrics } from "../tokens/metrics.slint";
+import { R3xTypography } from "../tokens/typography.slint";
+import { R3xIcons } from "../tokens/icons.slint";
+
+export component ExpressiveModal {
+    in property <string> title;
+    in property <bool> is_desktop: true;
+    in property <length> max_dialog_width: 580px;
+
+    callback close_requested();
+
+    width: 100%;
+    height: 100%;
+
+    // Scrim overlay blocking background clicks
+    TouchArea {
+        x: 0px;
+        y: 0px;
+        width: 100%;
+        height: 100%;
+        clicked => { root.close_requested(); }
+
+        Rectangle {
+            width: 100%;
+            height: 100%;
+            background: #000000.with_alpha(0.58);
+        }
+    }
+
+    // Centered expressive dialog card
+    VerticalLayout {
+        x: 0px;
+        y: 0px;
+        width: 100%;
+        height: 100%;
+        alignment: center;
+        padding: R3xMetrics.space_lg;
+
+        HorizontalLayout {
+            alignment: center;
+
+            TouchArea {
+                // Absorb pointer events inside dialog card
+                width: min(root.width - 32px, root.is_desktop ? root.max_dialog_width : 520px);
+
+                Rectangle {
+                    width: 100%;
+                    background: R3xPalette.surface_container_high;
+                    border_radius: R3xMetrics.radius_hero;
+                    border_width: 1px;
+                    border_color: R3xPalette.outline_variant;
+                    clip: true;
+
+                    VerticalLayout {
+                        padding: R3xMetrics.space_xl;
+                        spacing: R3xMetrics.space_lg;
+
+                        HorizontalLayout {
+                            alignment: space_between;
+                            spacing: R3xMetrics.space_md;
+
+                            MaterialText {
+                                text: root.title;
+                                style: R3xTypography.headline_sm;
+                                color: R3xPalette.on_surface;
+                                vertical_alignment: center;
+                            }
+
+                            IconButton {
+                                icon: R3xIcons.close;
+                                tooltip: "Close";
+                                clicked => { root.close_requested(); }
+                            }
+                        }
+
+                        ScrollView {
+                            max_height: 560px;
+                            VerticalLayout {
+                                spacing: R3xMetrics.space_md;
+                                @children
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

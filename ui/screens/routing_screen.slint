@@ -1,0 +1,313 @@
+import { FilledButton, IconButton, MaterialText, OutlineButton, Switch } from "@material";
+import { R3xPalette } from "../tokens/palette.slint";
+import { R3xMetrics } from "../tokens/metrics.slint";
+import { R3xTypography } from "../tokens/typography.slint";
+import { R3xIcons } from "../tokens/icons.slint";
+import { R3xAppState } from "../state/app_state.slint";
+import { ExpressiveCard, SurfaceTier } from "../components/expressive_card.slint";
+import { ConnectedSegmentedGroup } from "../components/connected_button_group.slint";
+import { StackedListItem, StackPosition } from "../components/stacked_list.slint";
+import { CompactTag, StatusPill, StatusTone } from "../components/status_badge.slint";
+import { EmptyStateView } from "../components/empty_error_state.slint";
+import { R3xSwitchRow, R3xTextField } from "../components/input_fields.slint";
+
+export component RoutingScreen {
+    in property <bool> is_desktop: true;
+
+    VerticalLayout {
+        spacing: R3xMetrics.space_lg;
+
+        HorizontalLayout {
+            alignment: space_between;
+            spacing: R3xMetrics.space_md;
+
+            VerticalLayout {
+                spacing: 2px;
+                MaterialText {
+                    text: R3xAppState.is_ru ? "Маршрутизация и DNS" : "Routing & DNS";
+                    style: R3xTypography.headline_md;
+                    color: R3xPalette.on_surface;
+                }
+                MaterialText {
+                    text: R3xAppState.is_ru
+                        ? "Правила раздельного туннелирования, наборы правил, DNS и конфиг ядер"
+                        : "Split-tunnel rules, rule sets, encrypted DNS resolvers, and raw core config";
+                    style: R3xTypography.body_md;
+                    color: R3xPalette.on_surface_variant;
+                }
+            }
+
+            HorizontalLayout {
+                spacing: R3xMetrics.space_sm;
+                OutlineButton {
+                    text: R3xAppState.is_ru ? "Пресеты LAN" : "Add LAN presets";
+                    icon: R3xIcons.alt_route;
+                    clicked => { R3xAppState.add_preset_rules(); }
+                }
+                FilledButton {
+                    text: R3xAppState.is_ru ? "Добавить правило" : "Add rule";
+                    icon: R3xIcons.add;
+                    clicked => { R3xAppState.open_modal("add_rule"); }
+                }
+            }
+        }
+
+        ConnectedSegmentedGroup {
+            items: [
+                { id: "rules", label: R3xAppState.is_ru ? "Правила" : "Rules", enabled: true, disabled_reason: "" },
+                { id: "rulesets", label: R3xAppState.is_ru ? "Наборы правил" : "Rule Sets", enabled: true, disabled_reason: "" },
+                { id: "dns", label: "DNS", enabled: true, disabled_reason: "" },
+                { id: "raw", label: R3xAppState.is_ru ? "Конфиг ядер" : "Raw Config", enabled: true, disabled_reason: "" },
+            ];
+            current_index <=> R3xAppState.routing_subtab;
+            selected(idx, _id) => {
+                R3xAppState.routing_subtab = idx;
+                if idx == 3 {
+                    R3xAppState.refresh_raw_config(R3xAppState.raw_config_core_index);
+                }
+            }
+        }
+
+        // Subtab 0: Routing Rules
+        if R3xAppState.routing_subtab == 0 : VerticalLayout {
+            spacing: R3xMetrics.space_xs;
+
+            if R3xAppState.routing_rules.length == 0 : EmptyStateView {
+                icon: R3xIcons.alt_route;
+                title: R3xAppState.is_ru ? "Правила маршрутизации не настроены" : "No custom routing rules";
+                description: R3xAppState.is_ru
+                    ? "Весь трафик идёт по политике по умолчанию. Добавьте пресеты LAN или создайте правило."
+                    : "Traffic follows default proxy routing. Install LAN/Private bypass presets or add a custom domain/IP/app rule.";
+                action_label: R3xAppState.is_ru ? "Установить пресеты" : "Install LAN presets";
+                action_clicked => { R3xAppState.add_preset_rules(); }
+            }
+
+            for rule[idx] in R3xAppState.routing_rules : StackedListItem {
+                position: R3xAppState.routing_rules.length == 1 ? StackPosition.only
+                    : idx == 0 ? StackPosition.first
+                    : idx == R3xAppState.routing_rules.length - 1 ? StackPosition.last
+                    : StackPosition.middle;
+                clickable: false;
+
+                HorizontalLayout {
+                    horizontal_stretch: 1;
+                    alignment: space_between;
+                    spacing: R3xMetrics.space_md;
+
+                    VerticalLayout {
+                        horizontal_stretch: 1;
+                        spacing: 2px;
+                        MaterialText {
+                            text: rule.name;
+                            style: R3xTypography.title_md;
+                            color: R3xPalette.on_surface;
+                        }
+                        MaterialText {
+                            text: rule.matcher_summary + " · #" + rule.priority + " · " + rule.group;
+                            style: R3xTypography.mono_sm;
+                            color: R3xPalette.on_surface_variant;
+                        }
+                    }
+
+                    HorizontalLayout {
+                        spacing: R3xMetrics.space_sm;
+
+                        VerticalLayout {
+                            alignment: center;
+                            CompactTag {
+                                text: rule.action_label;
+                                tone: rule.action_label == "Block" ? StatusTone.error
+                                    : rule.action_label == "Direct" ? StatusTone.success
+                                    : StatusTone.primary;
+                            }
+                        }
+
+                        VerticalLayout {
+                            alignment: center;
+                            Switch {
+                                checked: rule.enabled;
+                                checked_state_changed(v) => { R3xAppState.toggle_routing_rule(rule.id, v); }
+                            }
+                        }
+
+                        IconButton {
+                            icon: R3xIcons.delete;
+                            tooltip: "Delete rule";
+                            clicked => { R3xAppState.delete_routing_rule(rule.id); }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Subtab 1: Rule Sets Manager
+        if R3xAppState.routing_subtab == 1 : VerticalLayout {
+            spacing: R3xMetrics.space_md;
+
+            if R3xAppState.rule_sets.length == 0 : ExpressiveCard {
+                tier: SurfaceTier.standard;
+                corner_radius: R3xMetrics.radius_hero;
+                content_padding: R3xMetrics.space_xl;
+                VerticalLayout {
+                    spacing: R3xMetrics.space_sm;
+                    MaterialText {
+                        text: R3xAppState.is_ru ? "Встроенные и внешние наборы правил" : "Built-in & Custom Rule Sets";
+                        style: R3xTypography.title_large;
+                        color: R3xPalette.on_surface;
+                    }
+                    MaterialText {
+                        text: R3xAppState.is_ru
+                            ? "Наборы geoip-private и geosite-category-ads-all автоматически проецируются в форматы Xray, sing-box и Mihomo."
+                            : "Standard rule sets (geoip:private, geosite:category-ads-all) automatically translate across Xray, sing-box SRS, and Mihomo rules.";
+                        style: R3xTypography.body_md;
+                        color: R3xPalette.on_surface_variant;
+                        wrap: word_wrap;
+                    }
+                }
+            }
+        }
+
+        // Subtab 2: DNS Settings
+        if R3xAppState.routing_subtab == 2 : ExpressiveCard {
+            tier: SurfaceTier.standard;
+            corner_radius: R3xMetrics.radius_hero;
+            content_padding: R3xMetrics.space_xl;
+
+            VerticalLayout {
+                spacing: R3xMetrics.space_lg;
+
+                MaterialText {
+                    text: R3xAppState.is_ru ? "Конфигурация DNS и защита от утечек" : "DNS Configuration & Leak Protection";
+                    style: R3xTypography.title_large;
+                    color: R3xPalette.on_surface;
+                }
+
+                ConnectedSegmentedGroup {
+                    items: [
+                        { id: "system", label: "System", enabled: true, disabled_reason: "" },
+                        { id: "custom", label: "Custom", enabled: true, disabled_reason: "" },
+                        { id: "doh", label: "DoH", enabled: true, disabled_reason: "" },
+                        { id: "dot", label: "DoT", enabled: true, disabled_reason: "" },
+                        { id: "doq", label: "DoQ", enabled: true, disabled_reason: "" },
+                    ];
+                    current_index <=> R3xAppState.dns_mode_index;
+                }
+
+                R3xTextField {
+                    label: R3xAppState.is_ru ? "Основной DNS-резолвер" : "Primary DNS resolver";
+                    placeholder: "https://1.1.1.1/dns-query";
+                    monospace: true;
+                    text <=> R3xAppState.dns_primary_address;
+                }
+
+                R3xTextField {
+                    label: R3xAppState.is_ru ? "Резервный DNS-резолвер" : "Fallback DNS resolver";
+                    placeholder: "tls://9.9.9.9";
+                    monospace: true;
+                    text <=> R3xAppState.dns_fallback_address;
+                }
+
+                ConnectedSegmentedGroup {
+                    items: [
+                        { id: "off", label: R3xAppState.is_ru ? "Защита: Выкл" : "Leak Guard: Off", enabled: true, disabled_reason: "" },
+                        { id: "strict", label: R3xAppState.is_ru ? "Только туннель" : "Strict Tunnel Only", enabled: true, disabled_reason: "" },
+                        { id: "fakeip", label: "FakeIP", enabled: true, disabled_reason: "" },
+                    ];
+                    current_index <=> R3xAppState.dns_leak_mode_index;
+                }
+
+                R3xSwitchRow {
+                    position: StackPosition.only;
+                    title: R3xAppState.is_ru ? "Разрешить IPv6-запросы DNS" : "Enable IPv6 DNS resolution";
+                    subtitle: R3xAppState.is_ru ? "Оставьте выключенным на сетях только с IPv4" : "Keep disabled on IPv4-only networks to avoid AAAA leaks";
+                    checked: R3xAppState.dns_ipv6;
+                    toggled(v) => { R3xAppState.dns_ipv6 = v; }
+                }
+
+                HorizontalLayout {
+                    alignment: space_between;
+                    spacing: R3xMetrics.space_md;
+
+                    StatusPill {
+                        label: R3xAppState.dns_test_status;
+                        tone: StatusTone.neutral;
+                    }
+
+                    HorizontalLayout {
+                        spacing: R3xMetrics.space_sm;
+                        OutlineButton {
+                            text: R3xAppState.is_ru ? "Проверить DNS" : "Test DNS probe";
+                            icon: R3xIcons.speed;
+                            clicked => { R3xAppState.test_dns_clicked(); }
+                        }
+                        FilledButton {
+                            text: R3xAppState.is_ru ? "Сохранить DNS" : "Save DNS";
+                            icon: R3xIcons.check;
+                            clicked => { R3xAppState.save_dns_config(); }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Subtab 3: Raw Generated Core Config Preview
+        if R3xAppState.routing_subtab == 3 : ExpressiveCard {
+            tier: SurfaceTier.standard;
+            corner_radius: R3xMetrics.radius_hero;
+            content_padding: R3xMetrics.space_xl;
+
+            VerticalLayout {
+                spacing: R3xMetrics.space_md;
+
+                HorizontalLayout {
+                    alignment: space_between;
+                    MaterialText {
+                        text: R3xAppState.is_ru ? "Предпросмотр сгенерированной конфигурации" : "Generated Core Configuration Preview";
+                        style: R3xTypography.title_large;
+                        color: R3xPalette.on_surface;
+                    }
+                    OutlineButton {
+                        text: R3xAppState.is_ru ? "Обновить" : "Regenerate";
+                        icon: R3xIcons.refresh;
+                        clicked => { R3xAppState.refresh_raw_config(R3xAppState.raw_config_core_index); }
+                    }
+                }
+
+                StatusPill {
+                    label: R3xAppState.is_ru
+                        ? "Только чтение — секреты замаскированы; параметры берутся из активного профиля и правил"
+                        : "Read-only generated output — derived safely from selected profile and routing rules";
+                    tone: StatusTone.warning;
+                }
+
+                ConnectedSegmentedGroup {
+                    items: [
+                        { id: "xray", label: "Xray-core (JSON)", enabled: true, disabled_reason: "" },
+                        { id: "sing-box", label: "sing-box (JSON)", enabled: true, disabled_reason: "" },
+                        { id: "mihomo", label: "Mihomo (YAML)", enabled: true, disabled_reason: "" },
+                    ];
+                    current_index <=> R3xAppState.raw_config_core_index;
+                    selected(idx, _id) => { R3xAppState.refresh_raw_config(idx); }
+                }
+
+                Rectangle {
+                    min_height: 260px;
+                    background: R3xPalette.surface_container_lowest;
+                    border_radius: R3xMetrics.radius_md;
+                    border_width: 1px;
+                    border_color: R3xPalette.outline_variant;
+
+                    VerticalLayout {
+                        padding: R3xMetrics.space_md;
+                        MaterialText {
+                            text: R3xAppState.raw_config_preview;
+                            style: R3xTypography.mono_sm;
+                            color: R3xPalette.on_surface;
+                            wrap: word_wrap;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

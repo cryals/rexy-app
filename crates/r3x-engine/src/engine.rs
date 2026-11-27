@@ -127,6 +127,11 @@ impl R3xEngine {
     }
 
     #[must_use]
+    pub fn adapters(&self) -> Vec<Arc<dyn CoreAdapter>> {
+        self.adapters.read().clone()
+    }
+
+    #[must_use]
     pub fn connection_state(&self) -> ConnectionState {
         self.state.read().connection_state.clone()
     }

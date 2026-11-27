@@ -1,4 +1,4 @@
-use r3x_cores::{CoreManager, create_primary_adapters};
+use r3x_cores::{CoreManager, create_all_adapters};
 use r3x_domain::{ConnectionMode, CoreId, LogCategory, LogLevel, R3xError};
 use r3x_engine::{ConnectRequest, EngineConfig, LogHub, R3xEngine};
 use r3x_ipc::transport::BoxFuture;
@@ -215,7 +215,7 @@ async fn run_daemon() -> Result<(), R3xError> {
 
     let core_mgr = CoreManager::new(paths.cores_dir.clone(), Some(Arc::clone(&db)));
     let installed = core_mgr.discover_installed();
-    for adapter in create_primary_adapters(&core_mgr) {
+    for adapter in create_all_adapters(&core_mgr) {
         let is_inst = installed.contains_key(&adapter.id());
         engine.register_adapter(adapter, is_inst);
     }
