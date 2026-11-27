@@ -28,7 +28,7 @@ base64 = "0.23"
 chacha20poly1305 = { version = "0.11", features = ["zeroize"] }
 chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4.6", features = ["derive"] }
-criterion = "0.5"
+criterion = "0.8"
 directories = "6.0"
 flate2 = "1.1"
 hex = "0.4"
