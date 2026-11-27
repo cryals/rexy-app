@@ -20,15 +20,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run cargo-deny
-        uses: EmbarkStudios/cargo-deny-action@v2
+      - name: Install cargo-deny and cargo-audit
+        uses: taiki-e/install-action@v2
         with:
-          arguments: check licenses bans sources
+          tool: cargo-deny,cargo-audit
+
+      - name: Run cargo-deny
+        run: cargo deny check licenses bans sources
 
       - name: Run cargo-audit
-        uses: rustsec/audit-check@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+        run: cargo audit
 
   fuzz-smoke:
     name: LibFuzzer Smoke (Nightly Linux)

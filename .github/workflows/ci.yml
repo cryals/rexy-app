@@ -52,10 +52,11 @@ jobs:
       - name: Check formatting
         run: cargo fmt --all -- --check
 
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@cargo-deny
+
       - name: Check license, ban, and source policies
-        uses: EmbarkStudios/cargo-deny-action@v2
-        with:
-          arguments: check licenses bans sources
+        run: cargo deny check licenses bans sources
 
       - name: Check workspace compilation
         run: cargo check --workspace --locked

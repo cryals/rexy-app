@@ -44,9 +44,9 @@ jobs:
 
       - name: Run CLI, IPC, Network, Cores, Diagnostics & UI Smoke Tests
         run: |
-          cargo test --test cli_tests --locked
-          cargo test --test ipc_tests --locked
-          cargo test --test network_tests --locked
-          cargo test --test cores_tests --locked
-          cargo test --test diagnostics_tests --locked
-          cargo test --test ui_smoke --locked
+          cargo test -p r3x-cli --test cli_tests --locked
+          cargo test -p r3x-ipc --test ipc_tests --locked
+          cargo test -p r3x-network --test network_tests --locked
+          cargo test -p r3x-cores --test cores_tests --locked
+          cargo test -p r3x-diagnostics --test diagnostics_tests --locked
+          cargo test -p r3x-app --test ui_smoke --locked
