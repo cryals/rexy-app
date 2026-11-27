@@ -107,7 +107,7 @@ jobs:
           distribution: temurin
           java-version: "17"
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
       - name: Install Android platform-36 & NDK 27
         run: |
           yes | sdkmanager --licenses >/dev/null || true
