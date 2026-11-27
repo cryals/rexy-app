@@ -38,6 +38,11 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
+      - name: Set up Python 3.12 (for CycloneDX SBOM)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Build portable ZIP, SBOM & SHA-256 checksums
         shell: pwsh
         run: .\packaging\windows\package-portable.ps1 -DistDir dist
