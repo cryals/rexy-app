@@ -1,0 +1,28 @@
+{
+  "id": "shadowsocks-rust",
+  "name": "shadowsocks-rust",
+  "version": "1.23.0",
+  "release_source": "https://github.com/shadowsocks/shadowsocks-rust/releases",
+  "license": "MIT",
+  "supported_platforms": ["windows", "linux", "android"],
+  "supported_archs": ["x86_64", "aarch64"],
+  "checksums_sha256": {},
+  "signature_verification": "SHA-256 manifest digest verification",
+  "capabilities": {
+    "protocols": ["shadowsocks", "shadowsocks2022"],
+    "transports": ["TCP", "UDP"],
+    "supports_tls": false,
+    "supports_reality": false,
+    "supports_vision": false,
+    "supports_udp": true,
+    "supports_ipv6": true,
+    "supports_tun": true,
+    "supports_system_proxy": true,
+    "supports_routing": false,
+    "supports_stats": true,
+    "supports_dns": true
+  },
+  "limitations": ["Dedicated Shadowsocks AEAD & 2022 implementation (Wave 3)."],
+  "integration_type": "external_binary",
+  "changelog_summary": "Fast Rust Shadowsocks AEAD and Shadowsocks-2022 client."
+}

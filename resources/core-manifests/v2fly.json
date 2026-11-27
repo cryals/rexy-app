@@ -1,0 +1,28 @@
+{
+  "id": "v2fly",
+  "name": "V2Fly (v2ray-core)",
+  "version": "5.31.0",
+  "release_source": "https://github.com/v2fly/v2ray-core/releases",
+  "license": "MIT",
+  "supported_platforms": ["windows", "linux", "android"],
+  "supported_archs": ["x86_64", "aarch64"],
+  "checksums_sha256": {},
+  "signature_verification": "SHA-256 manifest digest verification",
+  "capabilities": {
+    "protocols": ["vless", "vmess", "trojan", "shadowsocks", "socks5", "http"],
+    "transports": ["TCP", "WebSocket", "gRPC", "HTTPUpgrade", "mKCP", "QUIC"],
+    "supports_tls": true,
+    "supports_reality": false,
+    "supports_vision": false,
+    "supports_udp": true,
+    "supports_ipv6": true,
+    "supports_tun": false,
+    "supports_system_proxy": true,
+    "supports_routing": true,
+    "supports_stats": true,
+    "supports_dns": true
+  },
+  "limitations": ["Legacy v2ray v5 compatibility core; lacks REALITY & XTLS Vision (prefer Xray-core or sing-box)."],
+  "integration_type": "external_binary",
+  "changelog_summary": "V2Fly v5 compatibility core (Wave 3)."
+}

@@ -1,0 +1,28 @@
+{
+  "id": "mieru",
+  "name": "Mieru",
+  "version": "3.14.0",
+  "release_source": "https://github.com/enfein/mieru/releases",
+  "license": "GPL-3.0-only",
+  "supported_platforms": ["windows", "linux", "android"],
+  "supported_archs": ["x86_64", "aarch64"],
+  "checksums_sha256": {},
+  "signature_verification": "SHA-256 manifest digest verification",
+  "capabilities": {
+    "protocols": ["mieru"],
+    "transports": ["TCP", "UDP"],
+    "supports_tls": false,
+    "supports_reality": false,
+    "supports_vision": false,
+    "supports_udp": true,
+    "supports_ipv6": true,
+    "supports_tun": false,
+    "supports_system_proxy": true,
+    "supports_routing": false,
+    "supports_stats": false,
+    "supports_dns": false
+  },
+  "limitations": ["Provides local SOCKS5/HTTP proxy; Mihomo can also drive Mieru outbounds natively with TUN."],
+  "integration_type": "external_binary",
+  "changelog_summary": "High-entropy TCP/UDP proxy protocol without TLS fingerprinting."
+}

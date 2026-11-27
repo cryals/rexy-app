@@ -1,0 +1,31 @@
+{
+  "id": "sing-box",
+  "name": "sing-box",
+  "version": "1.12.12",
+  "release_source": "https://github.com/SagerNet/sing-box/releases",
+  "license": "GPL-3.0-only",
+  "supported_platforms": ["windows", "linux", "android"],
+  "supported_archs": ["x86_64", "aarch64"],
+  "checksums_sha256": {},
+  "signature_verification": "SHA-256 manifest digest verification",
+  "capabilities": {
+    "protocols": ["vless", "vmess", "trojan", "shadowsocks", "shadowsocks2022", "hysteria2", "hysteria1", "tuic_v5", "tuic_v4", "any_tls", "shadow_tls_v3", "wire_guard", "socks5", "http", "https", "ssh"],
+    "transports": ["TCP", "WebSocket", "gRPC", "HTTPUpgrade", "QUIC", "HTTP/2", "UDP"],
+    "supports_tls": true,
+    "supports_reality": true,
+    "supports_vision": true,
+    "supports_udp": true,
+    "supports_ipv6": true,
+    "supports_tun": true,
+    "supports_system_proxy": true,
+    "supports_routing": true,
+    "supports_stats": true,
+    "supports_dns": true
+  },
+  "limitations": [
+    "TUN mode requires administrator privileges / service on Windows, CAP_NET_ADMIN on Linux, or VpnService FD on Android.",
+    "Upstream sing-box GPL-3.0 license requires honoring binary naming notices."
+  ],
+  "integration_type": "external_binary",
+  "changelog_summary": "Universal proxy & TUN platform supporting VLESS, Hysteria 2, TUIC v5, AnyTLS, ShadowTLS v3, and WireGuard."
+}

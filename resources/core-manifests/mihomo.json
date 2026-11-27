@@ -1,0 +1,31 @@
+{
+  "id": "mihomo",
+  "name": "Mihomo",
+  "version": "1.19.12",
+  "release_source": "https://github.com/MetaCubeX/mihomo/releases",
+  "license": "GPL-3.0-only",
+  "supported_platforms": ["windows", "linux", "android"],
+  "supported_archs": ["x86_64", "aarch64"],
+  "checksums_sha256": {},
+  "signature_verification": "SHA-256 manifest digest verification",
+  "capabilities": {
+    "protocols": ["vless", "vmess", "trojan", "shadowsocks", "shadowsocks2022", "shadowsocks_r", "hysteria2", "hysteria1", "tuic_v5", "any_tls", "mieru", "snell", "wire_guard", "socks5", "http", "https", "ssh"],
+    "transports": ["TCP", "WebSocket", "gRPC", "HTTPUpgrade", "HTTP/2", "UDP"],
+    "supports_tls": true,
+    "supports_reality": true,
+    "supports_vision": true,
+    "supports_udp": true,
+    "supports_ipv6": true,
+    "supports_tun": true,
+    "supports_system_proxy": true,
+    "supports_routing": true,
+    "supports_stats": true,
+    "supports_dns": true
+  },
+  "limitations": [
+    "TUN mode requires elevated network privileges or R3X daemon.",
+    "Upstream trademark terms forbid reusing the Mihomo name for unrelated projects."
+  ],
+  "integration_type": "external_binary",
+  "changelog_summary": "Rule-based YAML engine with Clash Meta compatibility, Mieru, Snell, AnyTLS, Hysteria 2, and TUN support."
+}

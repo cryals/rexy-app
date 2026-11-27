@@ -1,0 +1,28 @@
+{
+  "id": "naiveproxy",
+  "name": "NaiveProxy",
+  "version": "134.0.6998.88-1",
+  "release_source": "https://github.com/klzgrad/naiveproxy/releases",
+  "license": "BSD-3-Clause",
+  "supported_platforms": ["windows", "linux", "android"],
+  "supported_archs": ["x86_64", "aarch64"],
+  "checksums_sha256": {},
+  "signature_verification": "SHA-256 manifest digest verification",
+  "capabilities": {
+    "protocols": ["naive_proxy"],
+    "transports": ["HTTP/2", "HTTP/3"],
+    "supports_tls": true,
+    "supports_reality": false,
+    "supports_vision": false,
+    "supports_udp": true,
+    "supports_ipv6": true,
+    "supports_tun": false,
+    "supports_system_proxy": true,
+    "supports_routing": false,
+    "supports_stats": false,
+    "supports_dns": false
+  },
+  "limitations": ["Provides local SOCKS5/HTTP proxy only; pair with TUN bridge for full-device routing."],
+  "integration_type": "external_binary",
+  "changelog_summary": "Chromium network-stack HTTPS/HTTP/3 censorship-resistant proxy."
+}

@@ -1,0 +1,28 @@
+{
+  "id": "tor",
+  "name": "Tor (Arti / Tor Client)",
+  "version": "0.4.8.16",
+  "release_source": "https://www.torproject.org/download/tor/",
+  "license": "BSD-3-Clause",
+  "supported_platforms": ["windows", "linux"],
+  "supported_archs": ["x86_64", "aarch64"],
+  "checksums_sha256": {},
+  "signature_verification": "Tor Project GPG / SHA-256 verification",
+  "capabilities": {
+    "protocols": ["socks5"],
+    "transports": ["TCP"],
+    "supports_tls": true,
+    "supports_reality": false,
+    "supports_vision": false,
+    "supports_udp": false,
+    "supports_ipv6": true,
+    "supports_tun": false,
+    "supports_system_proxy": true,
+    "supports_routing": false,
+    "supports_stats": true,
+    "supports_dns": true
+  },
+  "limitations": ["TCP SOCKS5 anonymity onion router only; UDP unsupported (Wave 3)."],
+  "integration_type": "external_binary",
+  "changelog_summary": "Onion routing integration via local Tor SOCKS5 / ControlPort."
+}

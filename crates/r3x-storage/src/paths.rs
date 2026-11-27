@@ -15,6 +15,16 @@ pub struct AppPaths {
 }
 
 impl AppPaths {
+    pub fn from_env_or_system() -> Result<Self, R3xError> {
+        if let Ok(override_dir) = std::env::var("R3X_DATA_DIR") {
+            let trimmed = override_dir.trim();
+            if !trimmed.is_empty() {
+                return Ok(Self::from_root(Path::new(trimmed)));
+            }
+        }
+        Self::from_system()
+    }
+
     pub fn from_system() -> Result<Self, R3xError> {
         let proj = ProjectDirs::from("dev", "rexy", "R3X").ok_or_else(|| {
             R3xError::Storage("unable to resolve platform application directories".to_owned())

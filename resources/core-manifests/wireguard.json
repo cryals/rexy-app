@@ -1,0 +1,28 @@
+{
+  "id": "wireguard",
+  "name": "WireGuard",
+  "version": "1.0.20250521",
+  "release_source": "https://www.wireguard.com/install/",
+  "license": "GPL-2.0-only OR MIT",
+  "supported_platforms": ["windows", "linux", "android"],
+  "supported_archs": ["x86_64", "aarch64"],
+  "checksums_sha256": {},
+  "signature_verification": "OS package manager / signed Wintun driver / kernel netlink",
+  "capabilities": {
+    "protocols": ["wire_guard"],
+    "transports": ["UDP"],
+    "supports_tls": false,
+    "supports_reality": false,
+    "supports_vision": false,
+    "supports_udp": true,
+    "supports_ipv6": true,
+    "supports_tun": true,
+    "supports_system_proxy": false,
+    "supports_routing": true,
+    "supports_stats": true,
+    "supports_dns": true
+  },
+  "limitations": ["L3 TUN VPN only (does not expose standalone SOCKS/HTTP proxy without userspace proxy bridge)."],
+  "integration_type": "system_service",
+  "changelog_summary": "Kernel/userspace WireGuard L3 tunnel integration (Wave 3)."
+}

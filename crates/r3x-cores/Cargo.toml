@@ -1,0 +1,27 @@
+[package]
+name = "r3x-cores"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+description = "Core Manager, machine-readable core manifests, supervised process runner, and Xray/sing-box/Mihomo adapters"
+
+[dependencies]
+chrono.workspace = true
+parking_lot.workspace = true
+r3x-domain.workspace = true
+r3x-engine.workspace = true
+r3x-security.workspace = true
+r3x-storage.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml_ng.workspace = true
+sysinfo.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+uuid.workspace = true
+zip.workspace = true

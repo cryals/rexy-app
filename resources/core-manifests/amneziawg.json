@@ -1,0 +1,28 @@
+{
+  "id": "amneziawg",
+  "name": "AmneziaWG",
+  "version": "1.0.2026",
+  "release_source": "https://github.com/amnezia-vpn/amneziawg-go/releases",
+  "license": "MIT",
+  "supported_platforms": ["windows", "linux", "android"],
+  "supported_archs": ["x86_64", "aarch64"],
+  "checksums_sha256": {},
+  "signature_verification": "SHA-256 manifest digest verification",
+  "capabilities": {
+    "protocols": ["amnezia_wg", "wire_guard"],
+    "transports": ["UDP"],
+    "supports_tls": false,
+    "supports_reality": false,
+    "supports_vision": false,
+    "supports_udp": true,
+    "supports_ipv6": true,
+    "supports_tun": true,
+    "supports_system_proxy": false,
+    "supports_routing": true,
+    "supports_stats": true,
+    "supports_dns": true
+  },
+  "limitations": ["TUN VPN mode; supports AmneziaWG 1.0/1.5/2.0 header & junk obfuscation (Wave 3)."],
+  "integration_type": "external_binary",
+  "changelog_summary": "DPI-resistant WireGuard fork with Jc/Jmin/Jmax/S1-S4/H1-H4/I1-I5 obfuscation."
+}

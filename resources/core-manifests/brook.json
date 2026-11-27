@@ -1,0 +1,28 @@
+{
+  "id": "brook",
+  "name": "Brook",
+  "version": "20250404",
+  "release_source": "https://github.com/txthinking/brook/releases",
+  "license": "GPL-3.0-only",
+  "supported_platforms": ["windows", "linux"],
+  "supported_archs": ["x86_64", "aarch64"],
+  "checksums_sha256": {},
+  "signature_verification": "SHA-256 manifest digest verification",
+  "capabilities": {
+    "protocols": ["brook"],
+    "transports": ["TCP", "WebSocket", "QUIC", "UDP"],
+    "supports_tls": true,
+    "supports_reality": false,
+    "supports_vision": false,
+    "supports_udp": true,
+    "supports_ipv6": true,
+    "supports_tun": false,
+    "supports_system_proxy": true,
+    "supports_routing": false,
+    "supports_stats": false,
+    "supports_dns": false
+  },
+  "limitations": ["Desktop proxy mode via external Brook client (Wave 3)."],
+  "integration_type": "external_binary",
+  "changelog_summary": "Brook multi-transport proxy client."
+}

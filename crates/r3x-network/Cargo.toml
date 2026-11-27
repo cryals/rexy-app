@@ -1,0 +1,24 @@
+[package]
+name = "r3x-network"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+description = "Cross-platform system proxy, TUN capability checks, kill switch guard, recovery state, and local port/interface monitoring"
+
+[dependencies]
+chrono.workspace = true
+r3x-domain.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sysinfo.workspace = true
+tracing.workspace = true
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Networking_WinInet", "Win32_Foundation"] }
+winreg = "0.56"
+
+[dev-dependencies]
+parking_lot.workspace = true
+tempfile.workspace = true

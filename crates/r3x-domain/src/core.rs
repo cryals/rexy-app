@@ -10,20 +10,28 @@ pub enum CoreId {
     SingBox,
     Mihomo,
     Hysteria2,
+    #[serde(rename = "wireguard")]
     WireGuard,
+    #[serde(rename = "amneziawg")]
     AmneziaWg,
+    #[serde(rename = "naiveproxy")]
     NaiveProxy,
     Mieru,
+    #[serde(rename = "openvpn")]
     OpenVpn,
     ShadowsocksRust,
+    #[serde(rename = "v2fly")]
     V2Fly,
     Juicity,
     Brook,
     Tor,
+    #[serde(rename = "openconnect")]
     OpenConnect,
     Ikev2,
     Sstp,
+    #[serde(rename = "softether")]
     SoftEther,
+    #[serde(rename = "openssh-tun")]
     OpenSshTun,
 }
 

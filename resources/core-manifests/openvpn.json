@@ -1,0 +1,28 @@
+{
+  "id": "openvpn",
+  "name": "OpenVPN",
+  "version": "2.6.13",
+  "release_source": "https://openvpn.net/community-downloads/",
+  "license": "GPL-2.0-only",
+  "supported_platforms": ["windows", "linux"],
+  "supported_archs": ["x86_64", "aarch64"],
+  "checksums_sha256": {},
+  "signature_verification": "External system installation / distro package signature",
+  "capabilities": {
+    "protocols": ["open_vpn_udp", "open_vpn_tcp", "open_vpn_cloak"],
+    "transports": ["UDP", "TCP"],
+    "supports_tls": true,
+    "supports_reality": false,
+    "supports_vision": false,
+    "supports_udp": true,
+    "supports_ipv6": true,
+    "supports_tun": true,
+    "supports_system_proxy": false,
+    "supports_routing": true,
+    "supports_stats": true,
+    "supports_dns": true
+  },
+  "limitations": ["GPL-2.0-only: strictly invoked as an external user-installed system CLI binary, never linked into R3X."],
+  "integration_type": "system_service",
+  "changelog_summary": "External OpenVPN .ovpn profile support (Wave 3)."
+}

@@ -1,0 +1,23 @@
+[package]
+name = "r3x-daemon"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+description = "R3X background daemon hosting R3xEngine, core processes, network recovery, and authenticated local IPC"
+
+[dependencies]
+r3x-cores.workspace = true
+r3x-domain.workspace = true
+r3x-engine.workspace = true
+r3x-ipc.workspace = true
+r3x-network.workspace = true
+r3x-profiles.workspace = true
+r3x-security.workspace = true
+r3x-storage.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+uuid.workspace = true

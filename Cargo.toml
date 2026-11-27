@@ -7,6 +7,11 @@ members = [
     "crates/r3x-storage",
     "crates/r3x-ipc",
     "crates/r3x-engine",
+    "crates/r3x-profiles",
+    "crates/r3x-cores",
+    "crates/r3x-network",
+    "apps/r3x-daemon",
+    "apps/r3x-cli",
 ]
 
 [workspace.package]
@@ -20,23 +25,31 @@ argon2 = { version = "0.6", features = ["zeroize"] }
 base64 = "0.23"
 chacha20poly1305 = { version = "0.11", features = ["zeroize"] }
 chrono = { version = "0.4", features = ["serde"] }
+clap = { version = "4.6", features = ["derive"] }
 directories = "6.0"
 flate2 = "1.1"
 hex = "0.4"
 i-slint-backend-testing = "1.19.1"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
 interprocess = { version = "2.4", features = ["tokio"] }
 ipnet = { version = "2.12", features = ["serde"] }
 parking_lot = "0.13"
 proptest = "1.12"
+qrcode = { version = "0.15", default-features = false, features = ["svg"] }
 rand = "0.10"
 regex = "1.13"
+reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider", "json", "gzip", "charset", "http2"] }
+rqrr = "0.11"
 rusqlite = { version = "0.43", default-features = false, features = ["bundled", "cache"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+serde_yaml_ng = "0.10"
 sha2 = "0.11"
 slint = { version = "1.19.1", features = ["backend-android-activity-06"] }
 slint-build = "1.19.1"
 subtle = "2.6"
+sysinfo = { version = "0.40", default-features = false, features = ["system", "network"] }
 tar = "0.4"
 tempfile = "3"
 thiserror = "2.0"
@@ -52,7 +65,11 @@ zip = { version = "9.8", default-features = false, features = ["deflate"] }
 r3x-domain = { path = "crates/r3x-domain" }
 r3x-security = { path = "crates/r3x-security" }
 r3x-storage = { path = "crates/r3x-storage" }
+r3x-ipc = { path = "crates/r3x-ipc" }
 r3x-engine = { path = "crates/r3x-engine" }
+r3x-profiles = { path = "crates/r3x-profiles" }
+r3x-cores = { path = "crates/r3x-cores" }
+r3x-network = { path = "crates/r3x-network" }
 
 [package]
 name = "r3x-app"
@@ -73,6 +90,7 @@ path = "src/main.rs"
 name = "r3x-app"
 
 [dependencies]
+r3x-cores.workspace = true
 r3x-domain.workspace = true
 r3x-engine.workspace = true
 r3x-storage.workspace = true
@@ -93,3 +111,9 @@ apk_name = "r3x"
 
 [package.metadata.android.application]
 label = "R3X"
+
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+debug = false

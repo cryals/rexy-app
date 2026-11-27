@@ -1,0 +1,30 @@
+{
+  "id": "xray",
+  "name": "Xray-core",
+  "version": "26.2.6",
+  "release_source": "https://github.com/XTLS/Xray-core/releases",
+  "license": "MPL-2.0",
+  "supported_platforms": ["windows", "linux", "android"],
+  "supported_archs": ["x86_64", "aarch64"],
+  "checksums_sha256": {},
+  "signature_verification": "SHA-256 manifest digest + official GitHub release checksums",
+  "capabilities": {
+    "protocols": ["vless", "vmess", "trojan", "shadowsocks", "shadowsocks2022", "wire_guard", "socks5", "socks4", "socks4a", "http", "https"],
+    "transports": ["TCP", "WebSocket", "gRPC", "XHTTP", "HTTPUpgrade", "mKCP", "QUIC", "HTTP/2"],
+    "supports_tls": true,
+    "supports_reality": true,
+    "supports_vision": true,
+    "supports_udp": true,
+    "supports_ipv6": true,
+    "supports_tun": false,
+    "supports_system_proxy": true,
+    "supports_routing": true,
+    "supports_stats": true,
+    "supports_dns": true
+  },
+  "limitations": [
+    "No built-in cross-platform TUN inbound without an external TUN bridge such as tun2socks; use System Proxy or pair with sing-box/Mihomo for native TUN."
+  ],
+  "integration_type": "external_binary",
+  "changelog_summary": "XHTTP transport, VLESS Encryption, XTLS Vision, REALITY, and Shadowsocks 2022 support."
+}

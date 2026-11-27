@@ -1,0 +1,28 @@
+{
+  "id": "hysteria2",
+  "name": "Hysteria 2",
+  "version": "2.6.2",
+  "release_source": "https://github.com/apernet/hysteria/releases",
+  "license": "MIT",
+  "supported_platforms": ["windows", "linux", "android"],
+  "supported_archs": ["x86_64", "aarch64"],
+  "checksums_sha256": {},
+  "signature_verification": "SHA-256 manifest digest verification",
+  "capabilities": {
+    "protocols": ["hysteria2"],
+    "transports": ["QUIC", "UDP"],
+    "supports_tls": true,
+    "supports_reality": false,
+    "supports_vision": false,
+    "supports_udp": true,
+    "supports_ipv6": true,
+    "supports_tun": true,
+    "supports_system_proxy": true,
+    "supports_routing": false,
+    "supports_stats": true,
+    "supports_dns": false
+  },
+  "limitations": ["Dedicated Hysteria 2 protocol client; Wave 3 adapter integrates standalone CLI/TUN."],
+  "integration_type": "external_binary",
+  "changelog_summary": "Official reference Hysteria 2 Brutal congestion control QUIC proxy client."
+}

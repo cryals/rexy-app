@@ -1,0 +1,28 @@
+{
+  "id": "juicity",
+  "name": "Juicity",
+  "version": "0.4.3",
+  "release_source": "https://github.com/juicity/juicity/releases",
+  "license": "GPL-3.0-only",
+  "supported_platforms": ["windows", "linux", "android"],
+  "supported_archs": ["x86_64", "aarch64"],
+  "checksums_sha256": {},
+  "signature_verification": "SHA-256 manifest digest verification",
+  "capabilities": {
+    "protocols": ["juicity"],
+    "transports": ["QUIC"],
+    "supports_tls": true,
+    "supports_reality": false,
+    "supports_vision": false,
+    "supports_udp": true,
+    "supports_ipv6": true,
+    "supports_tun": false,
+    "supports_system_proxy": true,
+    "supports_routing": false,
+    "supports_stats": false,
+    "supports_dns": false
+  },
+  "limitations": ["Proxy mode only; QUIC congestion-controlled protocol (Wave 3)."],
+  "integration_type": "external_binary",
+  "changelog_summary": "Juicity QUIC proxy client."
+}

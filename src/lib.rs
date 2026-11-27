@@ -1,3 +1,4 @@
+use r3x_cores::{CoreManager, create_primary_adapters};
 use r3x_domain::{Language, LogCategory, LogLevel, ThemeMode};
 use r3x_engine::{EngineConfig, LogHub, R3xEngine};
 use r3x_storage::{AppPaths, R3xDatabase};
@@ -39,11 +40,20 @@ pub fn init_services(paths: &AppPaths) -> Result<AppBootstrap, r3x_domain::R3xEr
         ..EngineConfig::default()
     };
     let engine = Arc::new(R3xEngine::new(engine_cfg, Arc::clone(&logs)));
+    let core_mgr = CoreManager::new(paths.cores_dir.clone(), Some(Arc::clone(&db)));
+    let installed_cores = core_mgr.discover_installed();
+    for adapter in create_primary_adapters(&core_mgr) {
+        let installed = installed_cores.contains_key(&adapter.id());
+        engine.register_adapter(adapter, installed);
+    }
     logs.record(
         LogCategory::Application,
         LogLevel::Info,
         "r3x-app",
-        "R3X foundation services initialized",
+        format!(
+            "R3X services initialized ({} installed core(s))",
+            installed_cores.len()
+        ),
     );
 
     Ok(AppBootstrap { db, logs, engine })
@@ -55,8 +65,20 @@ pub fn sync_ui_from_state(ui: &MainWindow, bootstrap: &AppBootstrap) {
     let profiles = bootstrap.db.list_profiles().unwrap_or_default();
     let rules = bootstrap.db.list_routing_rules().unwrap_or_default();
     let log_count = bootstrap.logs.recent(None, 5000).len();
+    let installed_count = bootstrap.engine.installed_cores().len();
 
     let state = R3xAppState::get(ui);
+    state.set_active_core_name("Xray · sing-box · Mihomo".into());
+    state.set_active_core_subtitle(if installed_count > 0 {
+        format!("{installed_count} core(s) verified · Standby").into()
+    } else {
+        "Standby · No core binaries installed yet".into()
+    });
+    state.set_active_core_badge(if installed_count > 0 {
+        "Ready".into()
+    } else {
+        "Standby".into()
+    });
     state.set_subscription_count(subs.len() as i32);
     state.set_profile_count(profiles.len() as i32);
     state.set_routing_rule_count(rules.len() as i32);
@@ -219,7 +241,7 @@ pub fn main() {
         )
         .try_init();
 
-    let paths = match AppPaths::from_system() {
+    let paths = match AppPaths::from_env_or_system() {
         Ok(p) => p,
         Err(err) => {
             eprintln!("Failed resolving application paths: {err}");
