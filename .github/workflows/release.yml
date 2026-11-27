@@ -137,7 +137,7 @@ jobs:
     needs: [package-windows, package-linux, package-android]
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: artifacts
           merge-multiple: true
