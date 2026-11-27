@@ -1,0 +1,86 @@
+name: R3X Windows Build & Packaging
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "crates/**"
+      - "apps/**"
+      - "src/**"
+      - "ui/**"
+      - "packaging/windows/**"
+      - ".github/workflows/windows.yml"
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: r3x-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-x86_64:
+    name: Windows x86_64 Portable & Installer
+    runs-on: windows-2022
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.100.0
+          targets: x86_64-pc-windows-msvc
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build portable ZIP, SBOM & SHA-256 checksums
+        shell: pwsh
+        run: .\packaging\windows\package-portable.ps1 -DistDir dist
+
+      - name: Smoke-check CLI JSON output
+        shell: pwsh
+        run: |
+          .\dist\r3x.exe --json version
+          .\dist\r3x.exe --json cores list
+
+      - name: Install & compile Inno Setup installer (optional if available)
+        shell: pwsh
+        run: |
+          choco install innosetup --no-progress -y
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (Test-Path $iscc) {
+            & $iscc packaging\windows\r3x-installer.iss
+          }
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: r3x-windows-x86_64
+          path: |
+            dist/r3x-0.1.0-windows-x86_64-portable.zip
+            dist/r3x-0.1.0-windows-x86_64-setup.exe
+            dist/r3x-sbom.cdx.json
+            dist/SHA256SUMS.txt
+          if-no-files-found: warn
+
+  windows-arm64-check:
+    name: Windows ARM64 Cross-Check
+    runs-on: windows-2022
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.100.0
+          targets: aarch64-pc-windows-msvc
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Typecheck workspace for aarch64-pc-windows-msvc
+        run: cargo check --workspace --target aarch64-pc-windows-msvc --locked

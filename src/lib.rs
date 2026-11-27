@@ -1,3 +1,5 @@
+#[cfg(target_os = "android")]
+pub mod android_jni;
 pub mod controller;
 #[cfg(any(target_os = "windows", target_os = "linux"))]
 pub mod tray;
@@ -167,7 +169,8 @@ fn android_main(android_app: slint::android::AndroidApp) {
         eprintln!("Failed initializing Slint Android backend: {err}");
         return;
     }
-    let root = std::env::temp_dir().join("dev.rexy.r3x");
+    let root = android_jni::android_data_dir()
+        .unwrap_or_else(|| std::env::temp_dir().join("dev.rexy.r3x"));
     let paths = AppPaths::from_root(&root);
     if let Ok(bootstrap) = init_services(&paths)
         && let Ok(ui) = build_window(&bootstrap)

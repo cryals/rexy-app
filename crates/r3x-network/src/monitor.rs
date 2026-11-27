@@ -53,6 +53,10 @@ pub fn list_network_interfaces() -> Vec<NetworkInterfaceInfo> {
 /// Inspect active OS DNS nameservers using platform native configuration sources.
 #[must_use]
 pub fn inspect_os_dns_servers() -> Vec<String> {
+    #[cfg_attr(
+        not(any(target_os = "windows", target_os = "linux")),
+        allow(unused_mut)
+    )]
     let mut servers = Vec::new();
     #[cfg(target_os = "windows")]
     {

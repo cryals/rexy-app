@@ -1,0 +1,38 @@
+[package]
+name = "r3x-fuzz"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+r3x-domain = { path = "../crates/r3x-domain" }
+r3x-ipc = { path = "../crates/r3x-ipc" }
+r3x-profiles = { path = "../crates/r3x-profiles" }
+r3x-security = { path = "../crates/r3x-security" }
+tokio = { version = "1.54", features = ["rt"] }
+
+[[bin]]
+name = "fuzz_uri_parser"
+path = "fuzz_targets/fuzz_uri_parser.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_import_payload"
+path = "fuzz_targets/fuzz_import_payload.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_redactor"
+path = "fuzz_targets/fuzz_redactor.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_ipc_frame"
+path = "fuzz_targets/fuzz_ipc_frame.rs"
+doc = false

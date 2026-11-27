@@ -1,0 +1,52 @@
+name: R3X Integration & UI Smoke Suite
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: r3x-integration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration:
+    name: Workspace & Headless UI Integration (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.100.0
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install Linux Slint dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libdbus-1-dev libfontconfig1-dev libfreetype-dev \
+            libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev \
+            libgl1-mesa-dev libglu1-mesa-dev pkg-config
+
+      - name: Run CLI, IPC, Network, Cores, Diagnostics & UI Smoke Tests
+        run: |
+          cargo test --test cli_tests --locked
+          cargo test --test ipc_tests --locked
+          cargo test --test network_tests --locked
+          cargo test --test cores_tests --locked
+          cargo test --test diagnostics_tests --locked
+          cargo test --test ui_smoke --locked

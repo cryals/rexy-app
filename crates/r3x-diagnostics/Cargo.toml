@@ -25,4 +25,11 @@ tracing.workspace = true
 uuid.workspace = true
 
 [dev-dependencies]
+criterion.workspace = true
+r3x-cores.workspace = true
+r3x-profiles.workspace = true
 tempfile.workspace = true
+
+[[bench]]
+name = "r3x_benchmarks"
+harness = false

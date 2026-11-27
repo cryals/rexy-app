@@ -4,7 +4,7 @@
 
 If you discover a security vulnerability in R3X (such as secret leakage, IPC authorization bypass, path traversal during subscription/core import, TLS verification bypass, or privilege escalation), please report it privately to the repository maintainers rather than opening a public issue.
 
-## Security Architecture Highlights (Implemented in Wave 1)
+## Security Architecture Highlights
 
 - **Centralized Redaction (`r3x-security::Redactor`):** Strips proxy URI userinfo, JSON/YAML/INI secret keys, Bearer tokens, and sensitive query parameters from logs and diagnostic exports.
 - **No Plaintext Secret Fallback:** When platform credential storage (`Windows Credential Manager`, `Linux Secret Service`, `Android Keystore`) is unavailable, R3X refuses plaintext disk persistence (`R3xError::SecretStoreUnavailable`).

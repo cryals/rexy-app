@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>dev.rexy.r3x</id>
+  <name>R3X</name>
+  <summary>Universal Multi-Core VPN &amp; Proxy Client</summary>
+  <metadata_license>FSFAP</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+  <description>
+    <p>R3X (Rexy) is a Rust + Material 3 Expressive native Slint client orchestrating Xray-core, sing-box, Mihomo, WireGuard, AmneziaWG, Hysteria 2, and OpenVPN.</p>
+  </description>
+  <launchable type="desktop-id">dev.rexy.r3x.desktop</launchable>
+  <url type="homepage">https://github.com/cryals/rexy-app</url>
+</component>

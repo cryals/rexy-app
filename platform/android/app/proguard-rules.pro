@@ -1,0 +1,3 @@
+-keep class dev.rexy.r3x.R3xNativeBridge { *; }
+-keep class dev.rexy.r3x.R3xKeystoreStore { *; }
+-keep class dev.rexy.r3x.R3xVpnService { *; }

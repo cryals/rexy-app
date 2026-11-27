@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=R3X
+GenericName=Multi-Core VPN & Proxy Client
+Comment=Rust-powered Expressive Proxy — Many cores. One experience.
+Exec=r3x-app %u
+Icon=dev.rexy.r3x
+Terminal=false
+Categories=Network;Utility;
+Keywords=vpn;proxy;xray;sing-box;mihomo;wireguard;
+StartupWMClass=r3x-app

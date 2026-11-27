@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">R3X</string>
+    <string name="vpn_channel_name">R3X VPN Tunnel</string>
+    <string name="vpn_channel_description">Persistent status notification while R3X VPN tunnel is active</string>
+    <string name="vpn_notification_active">R3X multi-core tunnel active</string>
+    <string name="vpn_action_disconnect">Disconnect</string>
+</resources>

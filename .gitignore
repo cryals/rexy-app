@@ -17,3 +17,4 @@ platform/android/.gradle/
 platform/android/app/build/
 platform/android/.cxx/
 packaging/out/
+dist/

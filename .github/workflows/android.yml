@@ -1,0 +1,77 @@
+name: R3X Android NDK & APK Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "src/**"
+      - "crates/**"
+      - "ui/**"
+      - "platform/android/**"
+      - "packaging/android/**"
+      - ".github/workflows/android.yml"
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: r3x-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-arm64:
+    name: Android ARM64 NDK + Gradle Build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.100.0
+          targets: aarch64-linux-android, x86_64-linux-android
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK & NDK 27.2.12479018
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform-36 & NDK 27
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "ndk;27.2.12479018"
+
+      - name: Set up Gradle 8.13 (AGP 8.9.1 compatible)
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.13"
+
+      - name: Build Android native library and APK
+        run: |
+          export NDK_BIN="$ANDROID_HOME/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="$NDK_BIN/aarch64-linux-android29-clang"
+          export CC_aarch64_linux_android="$NDK_BIN/aarch64-linux-android29-clang"
+          export AR_aarch64_linux_android="$NDK_BIN/llvm-ar"
+          cargo build --lib --target aarch64-linux-android --release --locked
+          mkdir -p platform/android/app/src/main/jniLibs/arm64-v8a
+          cp target/aarch64-linux-android/release/libr3x_app_lib.so platform/android/app/src/main/jniLibs/arm64-v8a/
+          cd platform/android
+          gradle assembleDebug
+
+      - name: Upload Android debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: r3x-android-debug-apk
+          path: platform/android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn

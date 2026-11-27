@@ -1406,6 +1406,11 @@ pub fn wire_all_callbacks(ui: &MainWindow, bootstrap: &Arc<AppBootstrap>) {
             let b_bg = Arc::clone(&b);
             let u_bg = u.clone();
             b.runtime.spawn(async move {
+                #[cfg(target_os = "android")]
+                let tun_fd = crate::android_jni::active_tun_fd();
+                #[cfg(not(target_os = "android"))]
+                let tun_fd = None;
+
                 let res = b_bg
                     .engine
                     .connect(ConnectRequest {
@@ -1415,7 +1420,7 @@ pub fn wire_all_callbacks(ui: &MainWindow, bootstrap: &Arc<AppBootstrap>) {
                         mode: settings.preferred_connection_mode,
                         dns,
                         routing_rules: rules,
-                        tun_fd: None,
+                        tun_fd,
                     })
                     .await;
                 let _ = slint::invoke_from_event_loop(move || {

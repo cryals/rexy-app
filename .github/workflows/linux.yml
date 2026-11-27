@@ -1,0 +1,71 @@
+name: R3X Linux Build & Packaging
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "crates/**"
+      - "apps/**"
+      - "src/**"
+      - "ui/**"
+      - "packaging/linux/**"
+      - ".github/workflows/linux.yml"
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: r3x-linux-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux-x86_64:
+    name: Linux x86_64 (.deb, Portable Tarball & Desktop Metadata)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.100.0
+          targets: x86_64-unknown-linux-gnu
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install Linux build and metadata validation dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libdbus-1-dev libfontconfig1-dev libfreetype-dev \
+            libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev \
+            libgl1-mesa-dev libglu1-mesa-dev pkg-config \
+            desktop-file-utils appstream dpkg-dev
+
+      - name: Validate desktop entry and AppStream metadata
+        run: |
+          desktop-file-validate packaging/linux/dev.rexy.r3x.desktop
+          appstreamcli validate --no-net packaging/linux/dev.rexy.r3x.metainfo.xml
+
+      - name: Build .deb and AppDir/AppImage packages
+        run: |
+          chmod +x packaging/linux/build-deb.sh packaging/linux/build-appimage.sh
+          ./packaging/linux/build-deb.sh
+          ./packaging/linux/build-appimage.sh
+
+      - name: Smoke-check Linux CLI binary
+        run: |
+          ./target/release/r3x --json version
+          ./target/release/r3x --json cores list
+
+      - name: Upload Linux packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: r3x-linux-x86_64
+          path: dist/*
+          if-no-files-found: warn

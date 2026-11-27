@@ -2,24 +2,24 @@
 
 > **Status Definitions:** `Not started` | `In progress` | `Implemented` | `Tested` | `Verified` | `Blocked` | `Unsupported`
 > Note: `Implemented` does not mean `Verified`. `Verified` is assigned strictly after automated checks/tests pass on real behavior.
-> Note on protocol catalog: `PROXY-PROTOCOLS-AND-CORES.md` was not present in the workspace on initial audit; Section 10 of the specification is tracked as the canonical baseline.
+> Note on protocol catalog: `PROXY-PROTOCOLS-AND-CORES.md` was not present in `D:\Rexy` on initial audit; Section 10 of the specification was used as the canonical baseline.
 
-| Feature | Module | Platform | Implementation Status | Test Status | Remaining Work | Blockers |
-|---|---|---|---|---|---|---|
-| Cargo Workspace & Toolchain Pinning | Root (`Cargo.toml`, `rust-toolchain.toml`) | All | Verified | Passed (`cargo check`, `clippy`, `fmt`) | Add release profile & benchmarks | None |
-| License Audit & `cargo-deny` | `LICENSE.txt`, `deny.toml` | All | Verified | Passed (`licenses`, `bans`, `sources`) | Re-run with Wave 4 deps | None |
-| Domain Models & 10-state FSM | `crates/r3x-domain` | All | Verified | 5/5 passed (`domain_tests`) | None | None |
-| Security (Redaction, Archives, AEAD, SHA-256) | `crates/r3x-security` | All | Verified | 5/5 passed incl. `proptest` (`security_tests`) | Fuzz harnesses in Wave 4 | None |
-| SQLite Storage, Migrations & Recovery | `crates/r3x-storage` | All | Verified | 3/3 passed (`storage_tests`) | Wire Android Keystore JNI bridge in Wave 4 | None |
-| Versioned Authenticated IPC | `crates/r3x-ipc` | Windows / Linux | Verified | 2/2 passed (`ipc_tests`) | None | None |
-| Central Engine, Core Contract & LogHub | `crates/r3x-engine` | All | Verified | 4/4 passed (`engine_tests`) | Live binary integration where cores installed | None |
-| Subscription Parsers, QR & HTTP Refresh | `crates/r3x-profiles` | All | Verified | 6/6 passed incl. `proptest` & HTTP (`profiles_tests`) | None | None |
-| Core Manager, Manifests & All 19 Adapters | `crates/r3x-cores` | All | Verified (Configs & Subprocess) | 5/5 passed (`cores_tests`, 14 manifests + all adapters + real TCP subprocess) | Live multi-hour tunnel soak with external binaries | None |
-| Desktop Networking (Proxy, Recovery, Kill Switch, Ports) | `crates/r3x-network` | Windows / Linux | Verified | 2/2 passed (`network_tests`) | Real OS Linux desktop/Wayland GUI test | None |
-| Diagnostics, Routing, DNS Probes & Telemetry | `crates/r3x-diagnostics` | All | Verified | 4/4 passed (`diagnostics_tests`, 16 Doctor checks + SVG + `sysinfo`) | None | None |
-| Background Daemon (`r3x-daemon`) & CLI (`r3x`) | `apps/r3x-daemon`, `apps/r3x-cli` | Windows / Linux | Verified | 1/1 CLI JSON test passed (`cli_tests`) | None | None |
-| Full Material 3 Expressive UI Kit & All Screens | `ui/` & `src/` | All | Verified (Headless) | 1/1 comprehensive UI test (`ui_smoke`) | Interactive visual test on Linux/Android | None |
-| Desktop Window State & Tray Abstraction | `src/tray.rs` | Windows / Linux | Implemented | Window persistence compiled; `DesktopTrayHandle` abstracts OS icon cleanly for headless/Wayland CI compatibility | Optional `libayatana-appindicator` / Windows shell icon binding | None |
-| Dual-Portal MkDocs & Actions | `D:\Rexy\rexy-docs` | Web / GitHub Pages | Verified | `mkdocs build --strict` passed | Final Wave 4 docs sync | None |
-| Android Gradle + `VpnService` + JNI | `platform/android/` | Android | Not started | Not started | Wave 4 implementation | None |
-| Release Packaging, Fuzz, Benchmarks & CI | `.github/workflows/`, `packaging/`, `fuzz/` | All | In progress | `ci.yml` passing | Complete Wave 4 artifacts | None |
+| Feature | Module | Platform | Implementation Status | Test / Build Status | Remaining / Hardware Caveats |
+|---|---|---|---|---|---|
+| Cargo Workspace & Toolchain Pinning | Root (`Cargo.toml`, `rust-toolchain.toml`, `.cargo/config.toml`) | All | Verified | Passed (`fmt`, `check`, `clippy --all-targets -D warnings`, `[profile.release]`) | None |
+| License Audit, `cargo-deny` & `cargo-audit` | `LICENSE.txt`, `deny.toml` | All | Verified | `cargo deny` passed (`bans/licenses/sources ok`); `cargo audit` 0 vulns across 752 deps | 8 `unmaintained` upstream transitive advisories monitored via Dependabot |
+| Domain Models & 10-State FSM | `crates/r3x-domain` | All | Verified | `5/5` passed (`domain_tests`) | None |
+| Security (Redaction, Archives, AEAD, SHA-256) | `crates/r3x-security` | All | Verified | `5/5` passed incl. `proptest` (`security_tests`) + `fuzz_redactor` typechecked | Nightly `libFuzzer` fuzz runtime scheduled in Linux CI |
+| SQLite Storage, Migrations & Recovery | `crates/r3x-storage` | All | Verified | `3/3` passed (`storage_tests`) | Live AndroidKeyStore hardware test pending device bench |
+| Versioned Authenticated IPC | `crates/r3x-ipc` | Windows / Linux | Verified | `2/2` passed (`ipc_tests`) + `fuzz_ipc_frame` typechecked | None |
+| Central Engine, Core Contract & LogHub | `crates/r3x-engine` | All | Verified | `4/4` passed (`engine_tests`) | None |
+| Subscription Parsers, QR & HTTP Refresh | `crates/r3x-profiles` | All | Verified | `6/6` passed incl. `proptest` & HTTP (`profiles_tests`) + URI/import fuzzers checked | None |
+| Core Manager, Manifests & All 19 Adapters | `crates/r3x-cores`, `resources/core-manifests/` | All | Verified (Configs & Subprocess) | `5/5` passed (`cores_tests`: 14 manifests + all 19 adapters + real TCP subprocess) | External live multi-hour VPN soak not executed |
+| Desktop Networking (Proxy, Recovery, Kill Switch, Ports) | `crates/r3x-network` | Windows / Linux | Verified | `2/2` passed (`network_tests`) | Live Linux Wayland/X11 desktop run unexecuted |
+| Diagnostics, Routing, DNS & Criterion Benchmarks | `crates/r3x-diagnostics` | All | Verified | `4/4` passed (`diagnostics_tests`, 16 Doctor checks + SVG + `sysinfo`) + `4/4` Criterion benchmarks (`BENCH_EXIT=0`) | None |
+| Background Daemon (`r3x-daemon`) & CLI (`r3x`) | `apps/r3x-daemon`, `apps/r3x-cli` | Windows / Linux | Verified | `1/1` CLI test (`cli_tests`) + live `--release` `r3x.exe --json` smoke (`22.85–73.47 ms`, `exit=0`) | None |
+| Full Material 3 Expressive UI Kit & All Screens | `ui/` & `src/` | All | Verified (Headless) | `1/1` (`ui_smoke`) + Windows release EXE (`32,522,240 B`) | Interactive Linux GUI & physical Android display test pending |
+| Desktop Window State & Tray Abstraction | `src/tray.rs` | Windows / Linux | Implemented | Compiled across dev/release/Clippy targets (`WindowState` persisted) | Optional native OS tray shell icon bindings |
+| Android Gradle + `R3xVpnService` + JNI + Keystore | `platform/android/`, `src/android_jni.rs` | Android | Verified (Cross-Compile & APK) | `aarch64-linux-android` NDK `27.2.12479018` + Gradle `assembleDebug` passed (`BUILD_SCRIPT_EXIT=0`, `137,714,711 B` APK) | Live `VpnService` packet routing on physical Android hardware unexecuted |
+| Fuzz Harnesses, Packaging, SBOM & CI/CD | `.github/`, `packaging/`, `fuzz/` | All | Verified (Windows/Android/SBOM/Fuzz-Check) | Portable `.zip` + CycloneDX SBOM (`752` deps) + `SHA256SUMS.txt` + `fuzz` check (`exit=0`) + 8 CI workflows | Live Linux `.deb`/AppImage & Inno Setup `.exe` run in GitHub Actions |
+| Dual-Portal MkDocs & Actions | `D:\Rexy\rexy-docs` | Web / GitHub Pages | Verified | `mkdocs build --strict` passed (`MKDOCS_EXIT=0`), committed (`846a5db`) | Pages deployment awaits push when user chooses |

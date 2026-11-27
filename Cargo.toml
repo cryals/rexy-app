@@ -1,5 +1,6 @@
 [workspace]
 resolver = "3"
+exclude = ["fuzz"]
 members = [
     ".",
     "crates/r3x-domain",
@@ -27,6 +28,7 @@ base64 = "0.23"
 chacha20poly1305 = { version = "0.11", features = ["zeroize"] }
 chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4.6", features = ["derive"] }
+criterion = "0.5"
 directories = "6.0"
 flate2 = "1.1"
 hex = "0.4"
@@ -117,6 +119,9 @@ slint-build.workspace = true
 i-slint-backend-testing.workspace = true
 tempfile.workspace = true
 
+[target.'cfg(target_os = "android")'.dependencies]
+jni = "0.21"
+
 [package.metadata.android]
 package = "dev.rexy.r3x"
 apk_name = "r3x"
@@ -128,4 +133,11 @@ label = "R3X"
 debug = "line-tables-only"
 
 [profile.dev.package."*"]
+debug = false
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
 debug = false
